@@ -2,79 +2,283 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Votre profil santé - Biodelice</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profil Santé - Biodelice</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:      #2d5a3d;
+      --green-dark: #1e3d2a;
+      --green-btn:  #2f5c40;
+      --line:       #3a3a3a;
+      --text:       #1c1c1c;
+      --muted:      #666;
+      --border:     rgba(160,140,120,0.45);
+      --input-bg:   rgba(255,255,255,0.88);
+      --orange:     #e8621a;
+    }
+
     body {
+      min-height: 100vh;
       font-family: 'Poppins', sans-serif;
-      background: #1e3d2a;
-      color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
+      overflow: hidden;
     }
+
+    .bg {
+      position: fixed;
+      inset: 0;
+      background:
+        linear-gradient(rgba(255,255,255,0.62), rgba(255,255,255,0.62)),
+        url('{% static "rec.png" %}')
+        center / cover no-repeat;
+      z-index: 0;
+    }
+
     .container {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 40px;
-      border-radius: 16px;
-      width: 100%;
-      max-width: 500px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-      backdrop-filter: blur(10px);
-      text-align: center;
+      position: relative;
+      z-index: 1;
+      width: 620px;
+      padding: 52px 48px 48px;
+      animation: fadeUp 0.7s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(22px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 35px;
+    }
+    .title-line {
+      flex: 1;
+      height: 1.5px;
+      background: var(--line);
     }
     h1 {
       font-family: 'Playfair Display', serif;
-      font-size: 1.8rem;
-      margin-bottom: 10px;
+      font-weight: 600;
+      font-size: 1.75rem;
+      color: var(--text);
+      white-space: nowrap;
+      letter-spacing: 0.01em;
     }
-    p {
+
+    .subtitle {
+      text-align: center;
       font-size: 0.85rem;
-      color: rgba(255, 255, 255, 0.7);
-      margin-bottom: 25px;
-      line-height: 1.6;
+      color: var(--muted);
+      margin-bottom: 30px;
+      margin-top: -20px;
     }
-    input[type="text"] {
-      width: 100%;
-      padding: 14px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 8px;
-      color: #fff;
-      font-family: 'Poppins', sans-serif;
-      outline: none;
-      margin-bottom: 20px;
+
+    .section-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--green-dark);
+      letter-spacing: 0.08em;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-    input:focus { border-color: #e8621a; }
-    button {
-      width: 100%;
-      padding: 14px;
-      background: #e8621a;
-      border: none;
-      border-radius: 8px;
-      color: #fff;
-      font-family: 'Poppins', sans-serif;
-      font-weight: 500;
+    .section-title::after {
+      content: "";
+      height: 1px;
+      background: var(--border);
+      flex: 1;
+    }
+
+    /* Grid pour les maladies */
+    .disease-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 15px;
+      background: var(--input-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: all 0.2s;
     }
-    button:hover { background: #cf5414; }
+    .check-item:hover { border-color: var(--green); }
+    .check-item input[type="checkbox"] {
+      width: 16px; height: 16px;
+      accent-color: var(--green);
+    }
+    .check-item span { font-size: 0.82rem; color: var(--text); font-weight: 500; }
+
+    /* Zone des tags allergies */
+    .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 35px; }
+    
+    input[type="text"] {
+      padding: 13px 14px;
+      background: var(--input-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.86rem;
+      outline: none;
+      transition: border-color 0.22s;
+    }
+    input:focus { border-color: var(--green); }
+
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .tag {
+      background: var(--green-dark);
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      animation: fadeUp 0.3s ease;
+    }
+    .tag b { cursor: pointer; opacity: 0.7; }
+    .tag b:hover { opacity: 1; }
+
+    .btn-wrap {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .btn {
+      width: 280px;
+      padding: 15px 0;
+      background: var(--green-btn);
+      color: #fff;
+      border: none;
+      border-radius: 30px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: all 0.22s;
+      box-shadow: 0 4px 18px rgba(45,90,61,0.32);
+    }
+    .btn:hover {
+      background: var(--green-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(45,90,61,0.42);
+    }
+
+    .row:nth-child(2) { animation: fadeUp 0.7s 0.1s both; }
+    .row:nth-child(4) { animation: fadeUp 0.7s 0.2s both; }
   </style>
 </head>
 <body>
+
+  <div class="bg"></div>
+
   <div class="container">
-    <h1>Personnalisons votre expérience</h1>
-    <p>Entrez vos allergies ou maladies chroniques séparées par des virgules pour que nous filtrions les recettes (ex: diabète, hypertension, cœliaque, fraise).</p>
-    <form method="POST" action="{% url 'accounts:onboarding' %}">
+    <div class="title-wrap">
+      <span class="title-line"></span>
+      <h1>Profil Nutritionnel</h1>
+      <span class="title-line"></span>
+    </div>
+    
+    <p class="subtitle">Personnalisez votre expérience selon vos besoins de santé.</p>
+
+    <form method="POST" id="health-form">
       {% csrf_token %}
-      <input type="text" name="constraints_list" placeholder="diabète, arachide, gluten..." autofocus>
-      <button type="submit">Enregistrer et Continuer</button>
+
+      <div class="row">
+        <h3 class="section-title">Maladies & Régimes</h3>
+        <div class="disease-grid">
+          <label class="check-item">
+            <input type="checkbox" name="disease" value="diabète">
+            <span>Diabète</span>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" name="disease" value="hypertension">
+            <span>Hypertension</span>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" name="disease" value="cœliaque">
+            <span>Cœliaque</span>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" name="disease" value="vegan">
+            <span>Régime Vegan</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="row">
+        <h3 class="section-title">Allergies spécifiques</h3>
+        <div class="field">
+          <input type="text" id="tag-input" placeholder="Ajouter une allergie (ex: Fraise, Noisette...)" autocomplete="off">
+          <div id="tags-container" class="tags-container"></div>
+        </div>
+      </div>
+
+      <input type="hidden" name="constraints_list" id="final-constraints">
+
+      <div class="btn-wrap">
+        <button type="submit" class="btn" onclick="prepareSubmit()">Finaliser mon profil</button>
+      </div>
     </form>
   </div>
+
+  <script>
+    const input = document.getElementById('tag-input');
+    const container = document.getElementById('tags-container');
+    let tags = [];
+
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const val = input.value.trim().toLowerCase();
+        if (val && !tags.includes(val)) {
+          tags.push(val);
+          render();
+        }
+        input.value = '';
+      }
+    });
+
+    function render() {
+      container.innerHTML = tags.map(t => `
+        <div class="tag">
+          ${t} <b onclick="removeTag('${t}')">×</b>
+        </div>
+      `).join('');
+    }
+
+    function removeTag(t) {
+      tags = tags.filter(tag => tag !== t);
+      render();
+    }
+
+    function prepareSubmit() {
+      const checks = document.querySelectorAll('input[name="disease"]:checked');
+      const diseaseList = Array.from(checks).map(c => c.value);
+      document.getElementById('final-constraints').value = [...diseaseList, ...tags].join(',');
+    }
+  </script>
 </body>
 </html>
