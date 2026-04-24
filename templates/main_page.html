@@ -1,0 +1,524 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Biodelice</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:     #2d5a3d;
+      --green-dark:#1e3d2a;
+      --orange:    #e8621a;
+      --cream:     #fdf6ee;
+      --text:      #1c1c1c;
+      --muted:     #666;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Poppins', sans-serif; color: var(--text); background: #fff; }
+
+    /* ── NAVBAR ── */
+    nav {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 48px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2px solid rgba(255,255,255,0.7);
+    }
+    .logo-icon img { width: 100%; height: 100%; object-fit: cover; }
+    .logo-text {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: 0.03em;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 0.85rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.85);
+      text-decoration: none;
+      letter-spacing: 0.03em;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover,
+    .nav-links a.active { color: #fff; font-weight: 500; }
+    .nav-links a.active { color: var(--orange); font-weight: 600; }
+
+    .nav-btn {
+      padding: 9px 22px;
+      background: var(--orange);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.12s;
+    }
+    .nav-btn:hover { background: #cf5414; transform: translateY(-1px); }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      min-height: 54vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(rgba(0,0,0,0.60), rgba(0,0,0,0.50)),
+        url('{% static "pic.png" %}')
+        center / cover no-repeat;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 600px;
+      animation: fadeUp 0.9s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.2rem, 5vw, 3.2rem);
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: 10px;
+    }
+    .hero h1 .highlight {
+      font-family: 'Caveat', cursive;
+      color: var(--orange);
+      font-size: clamp(2.6rem, 6vw, 3.8rem);
+      display: block;
+    }
+
+    .hero p {
+      font-size: 0.82rem;
+      font-weight: 300;
+      color: rgba(255,255,255,0.82);
+      margin: 16px auto 32px;
+      max-width: 420px;
+      line-height: 1.65;
+    }
+
+    .hero-btn {
+      display: inline-block;
+      padding: 13px 36px;
+      background: var(--orange);
+      color: #fff;
+      border-radius: 30px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(232,98,26,0.42);
+    }
+    .hero-btn:hover {
+      background: #cf5414;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(232,98,26,0.5);
+    }
+
+    /* ── WHY SECTION — BENTO GRID ── */
+    .why {
+      background: var(--cream);
+      padding: 100px 48px 110px;
+    }
+
+    .why-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      max-width: 1000px;
+      margin: 0 auto 56px;
+      gap: 32px;
+    }
+    .why-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.4rem, 5vw, 3.6rem);
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.1;
+    }
+    .why-header h2 span { color: var(--orange); }
+    .why-header p {
+      max-width: 260px;
+      font-size: 0.8rem;
+      font-weight: 300;
+      color: var(--muted);
+      line-height: 1.7;
+      padding-bottom: 6px;
+    }
+
+    /* Bento grid */
+    .bento {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.15fr 1fr 0.85fr;
+      grid-template-rows: 220px 220px;
+      gap: 16px;
+    }
+
+    .bento-cell {
+      border-radius: 20px;
+      padding: 32px 30px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s;
+      cursor: default;
+    }
+    .bento-cell:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.14);
+    }
+
+    /* Cell colours */
+    .bc-green      { background: var(--green); color: #fff; }
+    .bc-orange     { background: var(--orange); color: #fff; }
+    .bc-cream-dark { background: #ede4d6; color: var(--text); }
+    .bc-white      { background: #fff; color: var(--text); box-shadow: 0 4px 24px rgba(0,0,0,0.07); }
+    .bc-dark       { background: #1a1a1a; color: #fff; }
+
+    /* Spanning */
+    .bento-cell.span-row { grid-row: span 2; justify-content: space-between; }
+    .bento-cell.span-col { grid-column: span 2; }
+
+    /* Big emoji / icon */
+    .bento-emoji {
+      font-size: 3rem;
+      line-height: 1;
+      margin-bottom: auto;
+    }
+    .bento-cell.span-row .bento-emoji { font-size: 4.5rem; }
+
+    /* Tag pill */
+    .bento-tag {
+      display: inline-block;
+      padding: 5px 13px;
+      border-radius: 20px;
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      width: fit-content;
+    }
+    .bc-green  .bento-tag  { background: rgba(255,255,255,0.18); color: #fff; }
+    .bc-orange .bento-tag  { background: rgba(255,255,255,0.22); color: #fff; }
+    .bc-dark   .bento-tag  { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.8); }
+    .bc-cream-dark .bento-tag { background: rgba(0,0,0,0.08); color: var(--text); }
+    .bc-white  .bento-tag  { background: var(--cream); color: var(--green); }
+
+    .bento-cell h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      line-height: 1.25;
+      margin-bottom: 8px;
+    }
+    .bento-cell.span-row h3 { font-size: 1.5rem; }
+
+    .bento-cell p {
+      font-size: 0.74rem;
+      font-weight: 300;
+      line-height: 1.6;
+      opacity: 0.8;
+    }
+
+    /* Decorative circle */
+    .bento-cell::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 130px; height: 130px;
+      border-radius: 50%;
+      opacity: 0.1;
+      background: #fff;
+      pointer-events: none;
+    }
+    .bc-cream-dark::before,
+    .bc-white::before { background: var(--green); opacity: 0.06; }
+
+    /* Counter badge */
+    .bento-counter {
+      position: absolute;
+      top: 24px; right: 24px;
+      font-family: 'Playfair Display', serif;
+      font-size: 3.5rem;
+      font-weight: 600;
+      opacity: 0.12;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    @media (max-width: 700px) {
+      .bento {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto;
+      }
+      .bento-cell.span-row { grid-row: span 1; }
+      .bento-cell.span-col { grid-column: span 2; }
+      .why-header { flex-direction: column; align-items: flex-start; }
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--green-dark);
+      color: rgba(255,255,255,0.75);
+      padding: 52px 48px 32px;
+    }
+
+    .footer-top {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      gap: 48px;
+      margin-bottom: 40px;
+      align-items: start;
+    }
+
+    .footer-copy {
+      font-size: 0.7rem;
+      line-height: 1.7;
+      color: rgba(255,255,255,0.5);
+      max-width: 220px;
+    }
+
+    .footer-col h4 {
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.9);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .footer-col ul { list-style: none; }
+    .footer-col ul li { margin-bottom: 8px; }
+    .footer-col ul li a {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.55);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-col ul li a:hover { color: #fff; }
+
+    .footer-social {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+    .social-icon {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 700;
+      transition: background 0.2s, color 0.2s;
+    }
+    .social-icon:hover { background: var(--orange); color: #fff; }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-bottom span {
+      font-size: 0.68rem;
+      color: rgba(255,255,255,0.35);
+    }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(22px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    @media (max-width: 600px) {
+      nav { padding: 14px 20px; }
+      .why { padding: 60px 20px 80px; }
+      .card.dark, .card.light { width: 100%; align-self: stretch; }
+      .footer-top { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav>
+    <a class="logo" href="#">
+      <div class="logo-icon">
+        <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=80&q=80" alt="logo"/>
+      </div>
+      <span class="logo-text">Biodelice</span>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="#" class="active">Home</a></li>
+      <li><a href="#why">Start</a></li>
+      <li><a href="#">About</a></li>
+    </ul>
+
+    <a href="{% url 'accounts:login' %}" class="nav-btn">Sign in</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <h1>
+        Cook it. taste it.
+        <span class="highlight">enjoy it !</span>
+      </h1>
+      <p>Des recettes pour tous : gluten-free ou gourmand, votre aventure culinaire commence ici !</p>
+      <a href="{% url 'accounts:signup' %}" class="hero-btn">Start now</a>
+    </div>
+  </section>
+
+  <!-- WHY BIODELICE — BENTO GRID -->
+  <section class="why" id="why">
+
+    <div class="why-header">
+      <h2>Why<br><span>Biodelice?</span></h2>
+      <p>Everything you need to cook smarter, eat better, and enjoy every single bite.</p>
+    </div>
+
+    <div class="bento">
+
+      <!-- TALL LEFT — Gluten free -->
+      <div class="bento-cell bc-green span-row">
+        <span class="bento-counter">01</span>
+        <div class="bento-emoji">🌾</div>
+        <div>
+          <span class="bento-tag">Gluten-Free</span>
+          <h3>Recipes that actually taste amazing</h3>
+          <p>Celiac-friendly meals or just avoiding gluten — we've got hundreds of options that never compromise on flavour.</p>
+        </div>
+      </div>
+
+      <!-- TOP MIDDLE — Everyday -->
+      <div class="bento-cell bc-orange">
+        <span class="bento-counter">02</span>
+        <div class="bento-emoji">⚡</div>
+        <span class="bento-tag">Quick & Easy</span>
+        <h3>Everyday delights</h3>
+        <p>Busy days, no stress — just deliciousness in 30 min or less.</p>
+      </div>
+
+      <!-- TOP RIGHT — Filter -->
+      <div class="bento-cell bc-white">
+        <span class="bento-counter">03</span>
+        <div class="bento-emoji">🎯</div>
+        <span class="bento-tag">Smart Filter</span>
+        <h3>Filter by allergies</h3>
+        <p>Peanut? Dairy? Vegan? We suggest recipes made just for you.</p>
+      </div>
+
+      <!-- BOTTOM MIDDLE — Community -->
+      <div class="bento-cell bc-dark">
+        <span class="bento-counter">04</span>
+        <div class="bento-emoji">🍽️</div>
+        <span class="bento-tag">Community</span>
+        <h3>10,000+ recipes & growing</h3>
+        <p>Contributed by cooks from around the world — new dishes every week.</p>
+      </div>
+
+      <!-- BOTTOM RIGHT — Save -->
+      <div class="bento-cell bc-cream-dark">
+        <span class="bento-counter">05</span>
+        <div class="bento-emoji">🔖</div>
+        <span class="bento-tag">Personalized</span>
+        <h3>Save your favourites</h3>
+        <p>Build your own recipe book. Cook it again anytime.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-top">
+      <p class="footer-copy">
+        © 2025 Fennec Studios, all rights reserved. All trademarks are property of their respective owners in Algeria and other countries. VAT included in all prices where applicable.
+      </p>
+
+      <div class="footer-col">
+        <ul>
+          <li><a href="#">Jobs</a></li>
+          <li><a href="#">About Fennec Studios</a></li>
+          <li><a href="#">Support</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Legal</a></li>
+          <li><a href="#">Refunds</a></li>
+          <li><a href="#">Cookies</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="footer-social">
+          <a href="#" class="social-icon" title="Facebook">f</a>
+          <a href="#" class="social-icon" title="Twitter">𝕏</a>
+          <a href="#" class="social-icon" title="Instagram">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© 2025 Biodelice — Tous droits réservés</span>
+      <span>Made with ❤️ by Fennec Studios</span>
+    </div>
+  </footer>
+
+</body>
+</html>

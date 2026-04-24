@@ -1,0 +1,80 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Votre profil santé - Biodelice</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #1e3d2a;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .container {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 40px;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      text-align: center;
+    }
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+    }
+    p {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 25px;
+      line-height: 1.6;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      outline: none;
+      margin-bottom: 20px;
+    }
+    input:focus { border-color: #e8621a; }
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #e8621a;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover { background: #cf5414; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Personnalisons votre expérience</h1>
+    <p>Entrez vos allergies ou maladies chroniques séparées par des virgules pour que nous filtrions les recettes (ex: diabète, hypertension, cœliaque, fraise).</p>
+    <form method="POST" action="{% url 'accounts:onboarding' %}">
+      {% csrf_token %}
+      <input type="text" name="constraints_list" placeholder="diabète, arachide, gluten..." autofocus>
+      <button type="submit">Enregistrer et Continuer</button>
+    </form>
+  </div>
+</body>
+</html>

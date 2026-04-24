@@ -1,0 +1,166 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Connexion</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .bg {
+      position: fixed;
+      inset: 0;
+        background:
+    linear-gradient(rgba(0, 0, 0, 0.60), rgba(0, 0, 0, 0.60)),
+    url('{% static "rec.png" %}') center / cover no-repeat;
+      z-index: 0;
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      width: 500px;
+      padding: 44px 40px 40px;
+      background: rgba(255, 255, 255, 0.52);
+      backdrop-filter: blur(20px) saturate(1.5);
+      -webkit-backdrop-filter: blur(20px) saturate(1.5);
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.72);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+      animation: fadeUp 0.7s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform: translateY(24px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #1e1e1e;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .title-bar {
+      width: 150px;
+      height: 3px;
+      background: #163832;
+      border-radius: 2px;
+      margin: 0 auto 32px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: #2e2e2e;
+      margin-bottom: 7px;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 11px 14px;
+      background: rgba(255,255,255,0.78);
+      border: 1.5px solid rgba(200,190,180,0.55);
+      border-radius: 15px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.86rem;
+      color: #222;
+      outline: none;
+      margin-bottom: 18px;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    input:focus {
+      border-color: #e8621a;
+      box-shadow: 0 0 0 3px rgba(232,98,26,0.14);
+      background: rgba(255,255,255,0.92);
+    }
+    input::placeholder { color: #b0a8a0; font-size: 0.82rem; }
+
+    .forgot {
+      display: block;
+      text-align: left;
+      font-size: 0.72rem;
+      color: #e8621a;
+      text-decoration: none;
+      margin-top: -12px;
+      margin-bottom: 24px;
+      transition: opacity 0.2s;
+    }
+    .forgot:hover { opacity: 0.72; text-decoration: underline; }
+
+    .btn {
+      width: 100%;
+      padding: 13px;
+      background: #e8621a;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.88rem;
+      border-radius: 30px;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.12s, box-shadow 0.2s;
+      box-shadow: 0 4px 16px rgba(232,98,26,0.38);
+    }
+    .btn:hover { background: #cf5414; box-shadow: 0 6px 22px rgba(232,98,26,0.48); }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.7; cursor: default; }
+
+    .footer {
+      margin-top: 22px;
+      text-align: center;
+      font-size: 0.74rem;
+      color: #444;
+    }
+    .footer a { color: #e8621a; text-decoration: none; font-weight: 500; }
+    .footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <div class="bg"></div>
+
+  <div class="card">
+    <h1>Se connecter</h1>
+    <div class="title-bar"></div>
+
+    <form method="POST" action="{% url 'accounts:login' %}">
+      {% csrf_token %}
+      
+      {% if form.errors %}
+        <p style="color: #e05c5c; font-size: 0.8rem; text-align: center; margin-bottom: 15px;">Identifiants incorrects.</p>
+      {% endif %}
+
+      <label for="username">Nom d'utilisateur</label>
+      <input type="text" id="username" name="username" placeholder="Votre adresse e-mail" required/>
+
+      <label for="password">Mot de passe</label>
+      <input type="password" id="password" name="password" placeholder="Votre mot de passe" required/>
+
+      <a href="{% url 'accounts:forgot_password' %}" class="forgot">Mot de passe oublié ?</a>
+
+      <button class="btn" type="submit" id="submitBtn">se connecter</button>
+    </form>
+
+    <p class="footer">Vous n'avez pas de compte ? <a href="{% url 'accounts:signup' %}">Créer un</a></p>
+  </div>
+
+</body>
+</html>

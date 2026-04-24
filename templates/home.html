@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Biodelice — Recettes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:      #1e3d2a;
+      --green-mid:  #2d5a3d;
+      --green-light:#3a7050;
+      --orange:     #e8621a;
+      --cream:      #fdf6ee;
+      --text:       #1c1c1c;
+      --muted:      #999;
+      --card-bg:    #fff;
+      --border:     rgba(255,255,255,0.10);
+    }
+
+    html, body {
+      min-height: 100vh;
+      font-family: 'Poppins', sans-serif;
+      background: var(--green);
+      color: #fff;
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 36px;
+      background: var(--green);
+      gap: 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    /* Search bar with gradient border */
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      max-width: 340px;
+    }
+    .search-wrap::before {
+      content: '';
+      position: absolute;
+      inset: -1.5px;
+      border-radius: 10px;
+      background: linear-gradient(
+        120deg,
+        rgba(255,255,255,0.35) 0%,
+        rgba(255,255,255,0.08) 40%,
+        rgba(232,98,26,0.45) 100%
+      );
+      z-index: 0;
+      pointer-events: none;
+    }
+    .search-bar {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 9px;
+      padding: 10px 16px;
+      backdrop-filter: blur(8px);
+    }
+    .search-bar input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 300;
+      color: rgba(255,255,255,0.85);
+    }
+    .search-bar input::placeholder { color: rgba(255,255,255,0.45); }
+    .search-bar svg { color: rgba(255,255,255,0.4); flex-shrink: 0; }
+
+    /* Nav links */
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 0.84rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a.active { color: var(--orange); font-weight: 500; }
+    .nav-links a:hover { color: #fff; }
+
+    /* Nav right icons */
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .nav-icon {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.09);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .nav-icon:hover { background: rgba(255,255,255,0.15); }
+    .nav-icon img {
+      width: 100%; height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    /* ── MAIN CONTENT ── */
+    main { padding: 28px 36px 60px; }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 22px;
+    }
+    .tab {
+      padding: 10px 28px 12px;
+      font-size: 1rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.45);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
+      user-select: none;
+      letter-spacing: 0.01em;
+    }
+    .tab.active {
+      color: #fff;
+      border-bottom: 2.5px solid var(--orange);
+    }
+    .tab:hover:not(.active) { color: rgba(255,255,255,0.75); }
+
+    /* Filters row */
+    .filters-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .filter-label {
+      font-size: 0.78rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.55);
+      margin-right: 4px;
+    }
+    .filter-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 2px solid #B34500;
+      background: rgba(255,255,255,0.06);
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.8);
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      user-select: none;
+    }
+    .filter-pill:hover {
+      border-color: var(--orange);
+      background: rgba(255,255,255,0.1);
+    }
+    .filter-pill svg { opacity: 0.6; }
+
+    /* Count dropdown */
+    .count-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .count-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0;
+    }
+    .count-btn svg { opacity: 0.7; }
+
+    /* ── RECIPE GRID ── */
+    .recipe-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .recipe-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      display: flex;
+      align-items: stretch;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.28s cubic-bezier(0.22,1,0.36,1), box-shadow 0.28s;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+    }
+    .recipe-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.28);
+    }
+
+    .recipe-img {
+      width: 110px;
+      min-height: 120px;
+      flex-shrink: 0;
+      object-fit: cover;
+      display: block;
+    }
+
+    .recipe-info {
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 6px;
+      flex: 1;
+    }
+
+    .recipe-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .recipe-desc {
+      font-size: 0.7rem;
+      font-weight: 300;
+      color: #777;
+      line-height: 1.55;
+      flex: 1;
+    }
+
+    .recipe-meta {
+      font-size: 0.65rem;
+      color: #aaa;
+      font-weight: 300;
+    }
+
+    /* Stars */
+    .stars {
+      display: flex;
+      gap: 2px;
+      margin-top: 6px;
+    }
+    .star {
+      color: #f4a800;
+      font-size: 0.85rem;
+    }
+    .star.empty { color: #ddd; }
+
+    /* Animate in */
+    .recipe-card {
+      animation: fadeUp 0.5s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    .recipe-card:nth-child(1) { animation-delay: 0.05s; }
+    .recipe-card:nth-child(2) { animation-delay: 0.10s; }
+    .recipe-card:nth-child(3) { animation-delay: 0.15s; }
+    .recipe-card:nth-child(4) { animation-delay: 0.20s; }
+    .recipe-card:nth-child(5) { animation-delay: 0.25s; }
+    .recipe-card:nth-child(6) { animation-delay: 0.30s; }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(18px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    @media (max-width: 700px) {
+      .recipe-grid { grid-template-columns: 1fr; }
+      nav { flex-wrap: wrap; }
+      .search-wrap { max-width: 100%; flex: 1 1 100%; order: 3; }
+    }
+
+    /* ── PROFILE DROPDOWN ── */
+    .profile-wrap {
+      position: relative;
+    }
+    .nav-icon.avatar-btn {
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: border-color 0.2s;
+    }
+    .nav-icon.avatar-btn.open {
+      border-color: var(--orange);
+    }
+
+    .dropdown {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      width: 190px;
+      background: #1a3526;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(-8px) scale(0.97);
+      pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+      z-index: 200;
+    }
+    .dropdown.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: all;
+    }
+
+    /* Dropdown user info */
+    .dropdown-header {
+      padding: 16px 18px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .dropdown-header .d-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #fff;
+    }
+    .dropdown-header .d-email {
+      font-size: 0.68rem;
+      color: rgba(255,255,255,0.45);
+      margin-top: 2px;
+    }
+
+    /* Dropdown items */
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 18px;
+      font-size: 0.8rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.8);
+      cursor: pointer;
+      transition: background 0.18s, color 0.18s;
+    }
+    .dropdown-item:hover { background: rgba(255,255,255,0.07); color: #fff; }
+    .dropdown-item.logout { color: #e05c5c; }
+    .dropdown-item.logout:hover { background: rgba(224,92,92,0.1); }
+    .dropdown-item svg { flex-shrink: 0; opacity: 0.7; }
+    .dropdown-item.logout svg { opacity: 1; }
+
+    /* ── PROFILE MODAL ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(4px);
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .modal-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background: #1a3526;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 18px;
+      width: 480px;
+      max-width: 95vw;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 36px 38px 38px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+      transform: translateY(20px);
+      transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
+    }
+    .modal-overlay.show .modal {
+      transform: translateY(0);
+    }
+
+    .modal-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+    .modal-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #fff;
+    }
+    .modal-close {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      border: none;
+      color: rgba(255,255,255,0.7);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      transition: background 0.2s;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+    /* Avatar in modal */
+    .modal-avatar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 28px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .modal-avatar img {
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--orange);
+    }
+    .modal-avatar-info .label {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 4px;
+    }
+    .modal-avatar-info .change-photo {
+      font-size: 0.76rem;
+      color: var(--orange);
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .modal-avatar-info .change-photo:hover { text-decoration: underline; }
+
+    /* Section heading */
+    .modal-section {
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 14px;
+      margin-top: 24px;
+    }
+    .modal-section:first-of-type { margin-top: 0; }
+
+    /* Modal form */
+    .modal-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .modal-field { display: flex; flex-direction: column; gap: 6px; }
+    .modal-field.full { grid-column: span 2; }
+
+    .modal-field label {
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.04em;
+    }
+    .modal-field input {
+      padding: 11px 14px;
+      background: rgba(255,255,255,0.07);
+      border: 1.5px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.82rem;
+      color: #fff;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .modal-field input::placeholder { color: rgba(255,255,255,0.25); }
+    .modal-field input:focus {
+      border-color: var(--orange);
+      background: rgba(255,255,255,0.1);
+    }
+    .modal-field input.error { border-color: #e05c5c; }
+
+    .field-hint {
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.3);
+      margin-top: 2px;
+    }
+    .field-error {
+      font-size: 0.65rem;
+      color: #e05c5c;
+      margin-top: 2px;
+      display: none;
+    }
+    .field-error.show { display: block; }
+
+    /* Divider */
+    .modal-divider {
+      height: 1px;
+      background: rgba(255,255,255,0.08);
+      margin: 22px 0;
+    }
+
+    /* Save button */
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 28px;
+    }
+    .btn-save {
+      flex: 1;
+      padding: 13px;
+      background: var(--orange);
+      color: #fff;
+      border: none;
+      border-radius: 9px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.84rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.12s;
+      box-shadow: 0 4px 16px rgba(232,98,26,0.32);
+    }
+    .btn-save:hover { background: #cf5414; }
+    .btn-save:active { transform: scale(0.98); }
+
+    .btn-cancel {
+      padding: 13px 22px;
+      background: rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.7);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 9px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.84rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-cancel:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+    /* Success toast */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: #2d5a3d;
+      color: #fff;
+      padding: 14px 22px;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.3);
+      border-left: 3px solid var(--orange);
+      transform: translateY(10px);
+      opacity: 0;
+      transition: opacity 0.3s, transform 0.3s;
+      z-index: 999;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav>
+    <!-- Search with gradient border -->
+    <div class="search-wrap">
+      <form method="GET" action="{% url 'recipes:index' %}" class="search-bar" style="margin: 0;">
+        <input type="hidden" name="tab" value="{{ current_tab }}">
+        <button type="submit" style="background: none; border: none; padding: 0; cursor: pointer; display: flex;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </button>
+        <input type="text" name="q" value="{{ request.GET.q|default_if_none:'' }}" placeholder="Search for a recipe ..."/>
+      </form>
+    </div>
+
+    <!-- Nav links -->
+    <ul class="nav-links">
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="signup.html">Start</a></li>
+      <li><a href="#">About</a></li>
+    </ul>
+
+    <!-- Icons -->
+    <div class="nav-right">
+      <div class="nav-icon" title="Notifications">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+      </div>
+      <div class="profile-wrap">
+        <div class="nav-icon avatar-btn" id="avatarBtn" title="Profil">
+          <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&q=80" alt="avatar"/>
+        </div>
+
+        <!-- Dropdown -->
+        <div class="dropdown" id="dropdown">
+          <div class="dropdown-header">
+            <div class="d-name">Alexandre D.</div>
+            <div class="d-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="abcac7ced3cac5cfd9ceebced3cec6dbc7ce85c8c4c6">[email&#160;protected]</a></div>
+          </div>
+          <div class="dropdown-item" id="editProfileBtn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            Modifier le profil
+          </div>
+          <div class="dropdown-item logout" id="logoutBtn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Se déconnecter
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <a href="?tab=sale{% if query %}&q={{ query }}{% endif %}" class="tab {% if current_tab == 'sale' %}active{% endif %}" style="text-decoration: none;">Salé</a>
+      <a href="?tab=sucre{% if query %}&q={{ query }}{% endif %}" class="tab {% if current_tab == 'sucre' %}active{% endif %}" style="text-decoration: none;">Sucré</a>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-row">
+      <span class="filter-label">Filtrer par</span>
+
+      <div class="filter-pill">
+        populaire
+      </div>
+      <div class="filter-pill">
+        Calories
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="filter-pill">
+        Difficulté
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="filter-pill">
+        my favs
+      </div>
+    </div>
+
+    <!-- Count -->
+    <div class="count-row">
+      <button class="count-btn">
+        Produits trouvés : {{ products|length }}
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+    </div>
+
+    <!-- Recipe Grid -->
+    <div class="recipe-grid" id="recipeGrid">
+      {% for product in products %}
+      <div class="recipe-card" onclick="openDetail('{{ product.name|escapejs }}', '{{ product.image_url|default:'https://via.placeholder.com/400x220?text=No+Image' }}', '{{ product.nutriscore|upper|default:'?' }}', '{{ product.ingredients_text|escapejs }}', '{{ product.allergens_tags|escapejs }}', '{{ product.sugars_100g }}', '{{ product.salt_100g }}')">
+        <img class="recipe-img" src="{{ product.image_url|default:'https://via.placeholder.com/110x120?text=No+Image' }}" alt="{{ product.name }}" loading="lazy"/>
+        <div class="recipe-info">
+          <div>
+            <div class="recipe-title">{{ product.name }}</div>
+            <div class="recipe-desc">Nutriscore: {{ product.nutriscore|upper|default:'N/A' }}</div>
+          </div>
+          <div class="stars">
+            <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star empty">★</span>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+        <p style="color:rgba(255,255,255,0.4);grid-column:span 3;text-align:center;padding:40px">Aucun produit trouvé respectant vos contraintes de santé.</p>
+      {% endfor %}
+    </div>
+
+    <style>
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      /* Skeleton cards */
+      .skeleton {
+        background: rgba(255,255,255,0.06);
+        border-radius: 12px;
+        height: 130px;
+        overflow: hidden;
+        position: relative;
+      }
+      .skeleton::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%);
+        animation: shimmer 1.4s infinite;
+      }
+      @keyframes shimmer {
+        from { transform: translateX(-100%); }
+        to   { transform: translateX(100%); }
+      }
+
+      /* Recipe detail modal */
+      .detail-modal {
+        background: #1a3526;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 18px;
+        width: 580px;
+        max-width: 95vw;
+        max-height: 88vh;
+        overflow-y: auto;
+        box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+        transform: translateY(20px);
+        transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
+      }
+      .modal-overlay.show .detail-modal { transform: translateY(0); }
+
+      .detail-hero {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+        border-radius: 18px 18px 0 0;
+        display: block;
+      }
+      .detail-body { padding: 28px 32px 32px; }
+      .detail-tags {
+        display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;
+      }
+      .detail-tag {
+        padding: 4px 12px;
+        border-radius: 20px;
+        background: rgba(232,98,26,0.15);
+        color: var(--orange);
+        font-size: 0.68rem;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .detail-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.6rem;
+        font-weight: 600;
+        color: #fff;
+        margin-bottom: 8px;
+      }
+      .detail-meta {
+        font-size: 0.74rem;
+        color: rgba(255,255,255,0.45);
+        margin-bottom: 22px;
+      }
+      .detail-section-title {
+        font-size: 0.65rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.35);
+        margin-bottom: 12px;
+        margin-top: 22px;
+      }
+      .ingredients-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-bottom: 6px;
+      }
+      .ingredient-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.78rem;
+        color: rgba(255,255,255,0.8);
+      }
+      .ingredient-item::before {
+        content: '';
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: var(--orange);
+        flex-shrink: 0;
+      }
+      .instructions-text {
+        font-size: 0.78rem;
+        color: rgba(255,255,255,0.7);
+        line-height: 1.75;
+        white-space: pre-line;
+      }
+      .detail-close {
+        position: absolute;
+        top: 16px; right: 16px;
+        width: 34px; height: 34px;
+        border-radius: 50%;
+        background: rgba(0,0,0,0.5);
+        border: none;
+        color: #fff;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1rem;
+        backdrop-filter: blur(4px);
+        transition: background 0.2s;
+      }
+      .detail-close:hover { background: rgba(0,0,0,0.75); }
+      .detail-modal { position: relative; }
+    </style>
+
+  </main>
+
+  <!-- RECIPE DETAIL MODAL -->
+  <div class="modal-overlay" id="detailOverlay">
+    <div class="detail-modal" id="detailModal">
+      <button class="detail-close" id="detailCloseBtn">✕</button>
+      <img id="detailImg" class="detail-hero" src="" alt=""/>
+      <div class="detail-body">
+        <div class="detail-tags" id="detailTags"></div>
+        <div class="detail-title" id="detailTitle"></div>
+        <div class="detail-meta" id="detailMeta"></div>
+        <div class="detail-section-title">Ingrédients</div>
+        <div class="ingredients-grid" id="detailIngredients"></div>
+        <div class="detail-section-title">Instructions</div>
+        <div class="instructions-text" id="detailInstructions"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE MODAL -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-top">
+        <span class="modal-title">Modifier le profil</span>
+        <button class="modal-close" id="modalCloseBtn">✕</button>
+      </div>
+
+      <!-- Avatar -->
+      <div class="modal-avatar">
+        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&q=80" alt="avatar"/>
+        <div class="modal-avatar-info">
+          <div class="label">Photo de profil</div>
+          <div class="change-photo">Changer la photo</div>
+        </div>
+      </div>
+
+      <form onsubmit="saveProfile(event)">
+
+        <!-- Infos perso -->
+        <div class="modal-section">Informations personnelles</div>
+        <div class="modal-row">
+          <div class="modal-field">
+            <label>Prénom</label>
+            <input type="text" id="firstName" value="Alexandre" placeholder="Prénom"/>
+          </div>
+          <div class="modal-field">
+            <label>Nom</label>
+            <input type="text" id="lastName" value="Dupont" placeholder="Nom"/>
+          </div>
+          <div class="modal-field full">
+            <label>Adresse e-mail</label>
+            <input type="email" id="email" value="alexandre@exemple.com" placeholder="email@exemple.com"/>
+          </div>
+        </div>
+
+        <div class="modal-divider"></div>
+
+        <!-- Mot de passe -->
+        <div class="modal-section">Changer le mot de passe</div>
+        <div class="modal-row">
+          <div class="modal-field full">
+            <label>Ancien mot de passe</label>
+            <input type="password" id="oldPassword" placeholder="Entrez votre ancien mot de passe"/>
+            <span class="field-error" id="oldPwError">Mot de passe incorrect</span>
+          </div>
+          <div class="modal-field">
+            <label>Nouveau mot de passe</label>
+            <input type="password" id="newPassword" placeholder="Nouveau mot de passe"/>
+            <span class="field-hint">8 caractères minimum</span>
+          </div>
+          <div class="modal-field">
+            <label>Confirmer</label>
+            <input type="password" id="confirmPassword" placeholder="Confirmer le mot de passe"/>
+            <span class="field-error" id="confirmPwError">Les mots de passe ne correspondent pas</span>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" id="cancelBtn">Annuler</button>
+          <button type="submit" class="btn-save">Enregistrer les modifications</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">✓ Profil mis à jour avec succès</div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+      // ══════════════════════════════════════════
+      //  Product Detail Modal
+      // ══════════════════════════════════════════
+      var detailOverlay = document.getElementById('detailOverlay');
+      document.getElementById('detailCloseBtn').addEventListener('click', closeDetail);
+      detailOverlay.addEventListener('click', function(e) { if (e.target === detailOverlay) closeDetail(); });
+
+      window.openDetail = function(name, img, nutriscore, ingredients, allergens, sugars, salt) {
+        document.getElementById('detailImg').src = img;
+        document.getElementById('detailTitle').textContent = name;
+        
+        document.getElementById('detailMeta').textContent = 
+          'Nutriscore: ' + nutriscore + '  •  Sucre: ' + sugars + 'g  •  Sel: ' + salt + 'g';
+
+        var tagsEl = document.getElementById('detailTags');
+        tagsEl.innerHTML = '';
+        if (allergens) {
+            allergens.split(',').forEach(function(tag) {
+                if(tag.trim()) tagsEl.innerHTML += '<span class="detail-tag">' + tag.replace('en:', '').trim() + '</span>';
+            });
+        }
+
+        document.getElementById('detailIngredients').innerHTML = '<div style="grid-column: span 2; font-size: 0.8rem; color: rgba(255,255,255,0.7); line-height: 1.6;">' + (ingredients || "Non spécifiés.") + '</div>';
+        
+        document.querySelectorAll('.detail-section-title')[1].style.display = 'none';
+        document.getElementById('detailInstructions').style.display = 'none';
+
+        detailOverlay.classList.add('show');
+        document.body.style.overflow = 'hidden';
+      };
+
+      function closeDetail() {
+        detailOverlay.classList.remove('show');
+        document.body.style.overflow = '';
+      }
+
+      // ══════════════════════════════════════════
+      //  Profile Dropdown & Modal
+      // ══════════════════════════════════════════
+      var avatarBtn      = document.getElementById('avatarBtn');
+      var dropdown       = document.getElementById('dropdown');
+      var editProfileBtn = document.getElementById('editProfileBtn');
+      var logoutBtn      = document.getElementById('logoutBtn');
+      var modalOverlay   = document.getElementById('modalOverlay');
+      var modalCloseBtn  = document.getElementById('modalCloseBtn');
+      var cancelBtn      = document.getElementById('cancelBtn');
+
+      avatarBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var open = dropdown.classList.toggle('show');
+        avatarBtn.classList.toggle('open', open);
+      });
+      document.addEventListener('click', function(e) {
+        var wrap = document.querySelector('.profile-wrap');
+        if (wrap && !wrap.contains(e.target)) {
+          dropdown.classList.remove('show');
+          avatarBtn.classList.remove('open');
+        }
+      });
+
+      function openModal() {
+        dropdown.classList.remove('show');
+        avatarBtn.classList.remove('open');
+        modalOverlay.classList.add('show');
+        document.body.style.overflow = 'hidden';
+      }
+      function closeModal() {
+        modalOverlay.classList.remove('show');
+        document.body.style.overflow = '';
+        document.querySelectorAll('.field-error').forEach(function(el) { el.classList.remove('show'); });
+        document.querySelectorAll('.modal-field input').forEach(function(el) { el.classList.remove('error'); });
+        document.getElementById('oldPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+      }
+
+      editProfileBtn.addEventListener('click', openModal);
+      modalCloseBtn.addEventListener('click', closeModal);
+      cancelBtn.addEventListener('click', closeModal);
+      modalOverlay.addEventListener('click', function(e) { if (e.target === modalOverlay) closeModal(); });
+
+      logoutBtn.addEventListener('click', function() {
+        showToast('👋 Déconnexion en cours…');
+                setTimeout(function() { window.location.href = '{% url "accounts:logout" %}'; }, 1200);
+      });
+      
+
+      var CURRENT_PASSWORD = 'password123';
+      document.querySelector('.modal form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var valid  = true;
+        var oldPw  = document.getElementById('oldPassword').value;
+        var newPw  = document.getElementById('newPassword').value;
+        var confPw = document.getElementById('confirmPassword').value;
+        if (oldPw || newPw || confPw) {
+          if (oldPw !== CURRENT_PASSWORD) {
+            document.getElementById('oldPassword').classList.add('error');
+            document.getElementById('oldPwError').classList.add('show');
+            valid = false;
+          } else {
+            document.getElementById('oldPassword').classList.remove('error');
+            document.getElementById('oldPwError').classList.remove('show');
+          }
+          if (newPw !== confPw) {
+            document.getElementById('confirmPassword').classList.add('error');
+            document.getElementById('confirmPwError').classList.add('show');
+            valid = false;
+          } else {
+            document.getElementById('confirmPassword').classList.remove('error');
+            document.getElementById('confirmPwError').classList.remove('show');
+          }
+        }
+        if (!valid) return;
+        var first = document.getElementById('firstName').value;
+        var last  = document.getElementById('lastName').value;
+        var email = document.getElementById('email').value;
+        document.querySelector('.dropdown-header .d-name').textContent = first + ' ' + last.charAt(0) + '.';
+        document.querySelector('.dropdown-header .d-email').textContent = email;
+        closeModal();
+        showToast('✓ Profil mis à jour avec succès');
+      });
+
+      function showToast(msg) {
+        var t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(function() { t.classList.remove('show'); }, 3000);
+      }
+
+    }); // DOMContentLoaded
+  </script>
+
+</body>
+</html>
