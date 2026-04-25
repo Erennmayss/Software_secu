@@ -2,6 +2,7 @@ import requests
 import time
 from django.core.management.base import BaseCommand
 from accounts.models import FoodProduct
+import os
 
 
 class Command(BaseCommand):
@@ -9,7 +10,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         # 👇 TA CLÉ API SPOONACULAR
-        api_key = "63cc5f933b634272a125bd51d4935084"
+        api_key = os.getenv("SPOONACULAR_API_KEY", "63cc5f933b634272a125bd51d4935084")
 
         self.stdout.write("🍰 Récupération de délicieuses recettes sucrées (desserts)...")
         

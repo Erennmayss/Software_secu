@@ -141,11 +141,10 @@ LOGIN_REDIRECT_URL = 'recipes:index'
 LOGOUT_REDIRECT_URL = 'main_page'
 
 # Email configuration (pour réinitialisation mot de passe - à configurer plus tard)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Pour le développement
-# En production, utiliser SMTP:
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-# EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Pour le développement
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')

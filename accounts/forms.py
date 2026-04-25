@@ -18,10 +18,8 @@ class SignupForm(UserCreationForm):
         
     def clean_email(self):
         email = self.cleaned_data.get('email')
-        # --- HACK TEMPORAIRE POUR LES TESTS ---
-        # Au lieu de bloquer l'inscription, on supprime l'ancien compte test pour pouvoir recommencer
         if User.objects.filter(email=email).exists():
-            User.objects.filter(email=email).delete()
+            raise forms.ValidationError("Un compte avec cette adresse e-mail existe déjà.")
         return email
 
     def save(self, commit=True):
