@@ -600,11 +600,11 @@
     </div>
 
     <!-- Nav links -->
-    <ul class="nav-links">
-      <li><a href="index.html" class="active">Home</a></li>
-      <li><a href="signup.html">Start</a></li>
-      <li><a href="#">About</a></li>
-    </ul>
+  <ul class="nav-links">
+  <li><a href="{% url 'recipes:index' %}" class="active">Home</a></li>
+  <li><a href="{% url 'accounts:signup' %}">Start</a></li>
+  <li><a href="#">About</a></li>
+</ul>
 
     <!-- Icons -->
     <div class="nav-right">
