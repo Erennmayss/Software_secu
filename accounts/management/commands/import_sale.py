@@ -6,24 +6,24 @@ import os
 
 
 class Command(BaseCommand):
-    help = 'Importe uniquement des recettes sucrées (desserts) depuis Spoonacular'
+    help = 'Importe uniquement des recettes salées (plats principaux) depuis Spoonacular'
 
     def handle(self, *args, **kwargs):
         # 👇 TA CLÉ API SPOONACULAR
-        api_key = os.getenv("SPOONACULAR_API_KEY", "e545459e41c3467a9a8a1aa89e0bf334")
+        api_key = os.getenv("SPOONACULAR_API_KEY", "63cc5f933b634272a125bd51d4935084")
 
-        self.stdout.write("🍰 Récupération de délicieuses recettes sucrées (desserts)...")
+        self.stdout.write("🍲 Récupération de délicieuses recettes salées (plats principaux)...")
         
         total_imported = 0
         
-        # 🔥 UNIQUEMENT les desserts
-        query_type = 'dessert'
+        # 🔥 UNIQUEMENT les plats salés (main course)
+        query_type = 'main course'
         
-        # 500 desserts maximum
+        # 500 plats maximum
         max_offset = 500
         
         for offset in range(0, max_offset, 100):
-            self.stdout.write(f"📥 Téléchargement de 100 desserts - offset {offset}...")
+            self.stdout.write(f"📥 Téléchargement de 100 plats salés - offset {offset}...")
             
             url = (
                 f"https://api.spoonacular.com/recipes/complexSearch"
@@ -60,7 +60,7 @@ class Command(BaseCommand):
                 results = data.get('results', [])
                 
                 if not results:
-                    self.stdout.write("ℹ️ Plus de résultats pour les desserts")
+                    self.stdout.write("ℹ️ Plus de résultats pour les plats salés")
                     break
                 
                 for r in results:
@@ -92,7 +92,7 @@ class Command(BaseCommand):
                     else:
                         difficulty = "Difficile"
 
-                    category = 'sucre'
+                    category = 'sale'
                     
                     ingredients = [
                         i.get('name', '') 
@@ -116,7 +116,7 @@ class Command(BaseCommand):
                     
                     if created:
                         total_imported += 1
-                        self.stdout.write(f"   🍰 Ajouté : {name[:50]}...")
+                        self.stdout.write(f"   🍲 Ajouté : {name[:50]}...")
                     else:
                         self.stdout.write(f"   🔄 Mis à jour : {name[:50]}...")
                 
@@ -129,9 +129,9 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.ERROR(f"❌ Erreur inattendue : {e}"))
                 break
         
-        desserts_count = FoodProduct.objects.filter(category='sucre').count()
+        sales_count = FoodProduct.objects.filter(category='sale').count()
         self.stdout.write(self.style.SUCCESS(
             f"\n✨ Import terminé ! ✨\n"
-            f"   🍰 Nouveaux desserts importés : {total_imported}\n"
-            f"   📚 Total desserts en base : {desserts_count}"
+            f"   🍲 Nouveaux plats salés importés : {total_imported}\n"
+            f"   📚 Total plats salés en base : {sales_count}"
         ))

@@ -45,6 +45,8 @@ class FoodProduct(models.Model):
     nutriscore = models.CharField(max_length=1, blank=True)
     sugars_100g = models.FloatField(default=0)
     salt_100g = models.FloatField(default=0)
+    calories = models.IntegerField(default=0)
+    difficulty = models.CharField(max_length=20, blank=True)
     image_url = models.URLField(blank=True)
 
     def __str__(self):

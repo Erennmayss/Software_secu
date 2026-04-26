@@ -15,6 +15,15 @@ def index(request):
     if query:
         products = products.filter(name__icontains=query)
 
+    # ── Nouveaux Filtres : Difficulté et Calories ──
+    difficulty = request.GET.get('difficulty')
+    if difficulty:
+        products = products.filter(difficulty__iexact=difficulty)
+        
+    calories_max = request.GET.get('calories_max')
+    if calories_max and calories_max.isdigit():
+        products = products.filter(calories__lte=int(calories_max))
+
     for c in constraints:
         c = c.lower()
         # 1. Gestion des maladies (règles nutritionnelles)
@@ -31,8 +40,18 @@ def index(request):
             # Allergie générique (ex: "fraise")
             products = products.exclude(ingredients_text__icontains=c)
 
+    # ── Calcul des statistiques de la base de données ──
+    total_recipes = FoodProduct.objects.count()
+    total_sucre = FoodProduct.objects.filter(category='sucre').count()
+    total_sale = FoodProduct.objects.filter(category='sale').count()
+
     return render(request, 'home.html', {
         'products': products,
         'current_tab': current_tab,
-        'query': query or ''
+        'query': query or '',
+        'selected_difficulty': difficulty or '',
+        'calories_max': calories_max or '',
+        'total_recipes': total_recipes,
+        'total_sucre': total_sucre,
+        'total_sale': total_sale
     })

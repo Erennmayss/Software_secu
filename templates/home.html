@@ -371,37 +371,46 @@
     .dropdown-item.logout svg { opacity: 1; }
 
     /* ── PROFILE MODAL ── */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.65);
-      backdrop-filter: blur(4px);
-      z-index: 300;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s;
-    }
+    /* Amélioration de l'overlay pour le centrage */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7); /* Plus sombre pour mieux voir la modale */
+  backdrop-filter: blur(4px);
+  z-index: 300;
+  display: flex;
+  align-items: center; /* Centre verticalement */
+  justify-content: center; /* Centre horizontalement */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+  padding: 20px; /* Sécurité pour ne pas toucher les bords de l'écran */
+}
+
+/* Correction de la boîte modale */
+.modal {
+  background: #1a3526;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  width: 100%;
+  max-width: 500px; /* Largeur maximale raisonnable */
+  max-height: 90vh; /* Ne dépasse jamais 90% de la hauteur de l'écran */
+  overflow-y: auto; /* Permet le défilement INTERNE si le contenu est trop long */
+  padding: 30px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+  transform: translateY(20px);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  
+  /* Cacher la barre de défilement pour un look plus propre (optionnel) */
+  scrollbar-width: thin;
+  scrollbar-color: var(--orange) transparent;
+}
     .modal-overlay.show {
       opacity: 1;
       pointer-events: all;
     }
 
-    .modal {
-      background: #1a3526;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 18px;
-      width: 480px;
-      max-width: 95vw;
-      max-height: 90vh;
-      overflow-y: auto;
-      padding: 36px 38px 38px;
-      box-shadow: 0 24px 80px rgba(0,0,0,0.5);
-      transform: translateY(20px);
-      transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
-    }
+    
     .modal-overlay.show .modal {
       transform: translateY(0);
     }
@@ -588,7 +597,7 @@
   <nav>
     <!-- Search with gradient border -->
     <div class="search-wrap">
-      <form method="GET" action="{% url 'recipes:index' %}" class="search-bar" style="margin: 0;">
+      <form id="searchForm" method="GET" action="{% url 'recipes:index' %}" class="search-bar" style="margin: 0;">
         <input type="hidden" name="tab" value="{{ current_tab }}">
         <button type="submit" style="background: none; border: none; padding: 0; cursor: pointer; display: flex;">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
@@ -622,8 +631,8 @@
         <!-- Dropdown -->
         <div class="dropdown" id="dropdown">
           <div class="dropdown-header">
-            <div class="d-name">Alexandre D.</div>
-            <div class="d-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="abcac7ced3cac5cfd9ceebced3cec6dbc7ce85c8c4c6">[email&#160;protected]</a></div>
+            <div class="d-name">{{ request.user.full_name|default:request.user.email }}</div>
+            <div class="d-email">{{ request.user.email }}</div>
           </div>
           <div class="dropdown-item" id="editProfileBtn">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -648,6 +657,11 @@
   <!-- MAIN -->
   <main>
 
+    <!-- Stats Banner -->
+    <div class="stats-banner text-center" style="margin-bottom: 20px; font-size: 0.9rem; color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px;">
+        Découvrez nos <strong>{{ total_recipes }}</strong> recettes, dont <strong>{{ total_sale }}</strong> plats salés et <strong>{{ total_sucre }}</strong> desserts !
+    </div>
+
     <!-- Tabs -->
     <div class="tabs">
       <a href="?tab=sale{% if query %}&q={{ query }}{% endif %}" class="tab {% if current_tab == 'sale' %}active{% endif %}" style="text-decoration: none;">Salé</a>
@@ -661,13 +675,17 @@
       <div class="filter-pill">
         populaire
       </div>
-      <div class="filter-pill">
-        Calories
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      <div class="filter-pill" style="padding: 0; display: flex; align-items: center;">
+        <input type="number" name="calories_max" form="searchForm" value="{{ calories_max }}" placeholder="Kcal max" style="background:transparent; border:none; color:rgba(255,255,255,0.8); outline:none; padding: 8px 6px 8px 16px; width: 90px; font-size:0.75rem;" onkeypress="if(event.key === 'Enter'){ this.form.submit(); }">
+        <svg onclick="document.getElementById('searchForm').submit();" style="cursor:pointer; margin-right:12px; opacity:0.7;" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
-      <div class="filter-pill">
-        Difficulté
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      <div class="filter-pill" style="padding: 0;">
+        <select name="difficulty" form="searchForm" onchange="this.form.submit()" style="background:transparent; border:none; color:rgba(255,255,255,0.8); outline:none; padding: 8px 16px; cursor:pointer; font-size:0.75rem; appearance: none;">
+          <option value="" style="color:#000;">Difficulté</option>
+          <option value="Facile" style="color:#000;" {% if selected_difficulty == "Facile" %}selected{% endif %}>Facile</option>
+          <option value="Moyen" style="color:#000;" {% if selected_difficulty == "Moyen" %}selected{% endif %}>Moyen</option>
+          <option value="Difficile" style="color:#000;" {% if selected_difficulty == "Difficile" %}selected{% endif %}>Difficile</option>
+        </select>
       </div>
       <div class="filter-pill">
         my favs
@@ -690,7 +708,11 @@
         <div class="recipe-info">
           <div>
             <div class="recipe-title">{{ product.name }}</div>
-            <div class="recipe-desc">Nutriscore: {{ product.nutriscore|upper|default:'N/A' }}</div>
+            <div class="recipe-desc" style="margin-top: 4px;">
+              Nutriscore: {{ product.nutriscore|upper|default:'N/A' }}<br/>
+              <span style="display:inline-block; margin-top:4px; padding: 2px 6px; background: rgba(232,98,26,0.15); color: var(--orange); border-radius: 4px;">🔥 {{ product.calories }} kcal</span>
+              <span style="display:inline-block; margin-top:4px; padding: 2px 6px; background: rgba(255,255,255,0.1); border-radius: 4px;">⏱️ {{ product.difficulty|default:"Inconnue" }}</span>
+            </div>
           </div>
           <div class="stars">
             <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star empty">★</span>
@@ -861,22 +883,23 @@
         </div>
       </div>
 
-      <form onsubmit="saveProfile(event)">
+      <form id="profileForm">
+        {% csrf_token %}
 
         <!-- Infos perso -->
         <div class="modal-section">Informations personnelles</div>
         <div class="modal-row">
           <div class="modal-field">
             <label>Prénom</label>
-            <input type="text" id="firstName" value="Alexandre" placeholder="Prénom"/>
+            <input type="text" id="firstName" value="{{ request.user.first_name }}" placeholder="Prénom"/>
           </div>
           <div class="modal-field">
             <label>Nom</label>
-            <input type="text" id="lastName" value="Dupont" placeholder="Nom"/>
+            <input type="text" id="lastName" value="{{ request.user.last_name }}" placeholder="Nom"/>
           </div>
           <div class="modal-field full">
             <label>Adresse e-mail</label>
-            <input type="email" id="email" value="alexandre@exemple.com" placeholder="email@exemple.com"/>
+            <input type="email" id="email" value="{{ request.user.email }}" placeholder="email@exemple.com"/>
           </div>
         </div>
 
@@ -1002,41 +1025,61 @@
         showToast('👋 Déconnexion en cours…');
                 setTimeout(function() { window.location.href = '{% url "accounts:logout" %}'; }, 1200);
       });
-      
 
-      var CURRENT_PASSWORD = 'password123';
-      document.querySelector('.modal form').addEventListener('submit', function(e) {
+      document.querySelector('.modal form').addEventListener('submit', async function(e) {
         e.preventDefault();
         var valid  = true;
         var oldPw  = document.getElementById('oldPassword').value;
         var newPw  = document.getElementById('newPassword').value;
         var confPw = document.getElementById('confirmPassword').value;
+
+        // Reset erreurs
+        document.querySelectorAll('.field-error').forEach(function(el) { el.classList.remove('show'); });
+        document.querySelectorAll('.modal-field input').forEach(function(el) { el.classList.remove('error'); });
+
         if (oldPw || newPw || confPw) {
-          if (oldPw !== CURRENT_PASSWORD) {
-            document.getElementById('oldPassword').classList.add('error');
-            document.getElementById('oldPwError').classList.add('show');
-            valid = false;
-          } else {
-            document.getElementById('oldPassword').classList.remove('error');
-            document.getElementById('oldPwError').classList.remove('show');
-          }
-          if (newPw !== confPw) {
-            document.getElementById('confirmPassword').classList.add('error');
-            document.getElementById('confirmPwError').classList.add('show');
-            valid = false;
-          } else {
-            document.getElementById('confirmPassword').classList.remove('error');
-            document.getElementById('confirmPwError').classList.remove('show');
-          }
+            if (newPw !== confPw) {
+                document.getElementById('confirmPassword').classList.add('error');
+                document.getElementById('confirmPwError').classList.add('show');
+                valid = false;
+            }
         }
         if (!valid) return;
+
         var first = document.getElementById('firstName').value;
         var last  = document.getElementById('lastName').value;
         var email = document.getElementById('email').value;
-        document.querySelector('.dropdown-header .d-name').textContent = first + ' ' + last.charAt(0) + '.';
-        document.querySelector('.dropdown-header .d-email').textContent = email;
-        closeModal();
-        showToast('✓ Profil mis à jour avec succès');
+        var csrf  = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        try {
+            // 1. Mise à jour du mot de passe si rempli
+            if (oldPw && newPw) {
+                const resPw = await fetch('/accounts/profile/update/', { 
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+                    body: JSON.stringify({ action: 'password', old_password: oldPw, new_password: newPw, confirm_password: confPw })
+                });
+                const dataPw = await resPw.json();
+                if (!dataPw.success) {
+                    if (dataPw.error === 'old_password') {
+                        document.getElementById('oldPassword').classList.add('error');
+                        document.getElementById('oldPwError').classList.add('show');
+                    } else alert("Erreur mot de passe.");
+                    return;
+                }
+            }
+            // 2. Mise à jour profil
+            const resProfile = await fetch('/accounts/profile/update/', { 
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+                body: JSON.stringify({ action: 'profile', first_name: first, last_name: last, email: email })
+            });
+            const dataProfile = await resProfile.json();
+            if (dataProfile.success) {
+                document.querySelector('.dropdown-header .d-name').textContent = dataProfile.full_name;
+                document.querySelector('.dropdown-header .d-email').textContent = dataProfile.email;
+                closeModal();
+                showToast('✓ Profil mis à jour avec succès');
+            } else alert("Erreur: Vérifiez vos informations.");
+        } catch(err) { console.error(err); }
       });
 
       function showToast(msg) {
@@ -1050,4 +1093,4 @@
   </script>
 
 </body>
-</html>
+</html>  
