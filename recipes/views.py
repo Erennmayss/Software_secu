@@ -1,4 +1,5 @@
-from django.shortcuts import render
+from django.http import JsonResponse
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from accounts.models import FoodProduct
 
@@ -24,6 +25,10 @@ def index(request):
     if calories_max and calories_max.isdigit():
         products = products.filter(calories__lte=int(calories_max))
 
+    # ── Filtre Favoris ──
+    if request.GET.get('favs') == '1':
+        products = products.filter(favorites=request.user)
+
     for c in constraints:
         c = c.lower()
         # 1. Gestion des maladies (règles nutritionnelles)
@@ -45,6 +50,9 @@ def index(request):
     total_sucre = FoodProduct.objects.filter(category='sucre').count()
     total_sale = FoodProduct.objects.filter(category='sale').count()
 
+    # ── Favoris de l'utilisateur pour l'affichage des cœurs ──
+    user_favorites = request.user.favorite_products.values_list('id', flat=True)
+
     return render(request, 'home.html', {
         'products': products,
         'current_tab': current_tab,
@@ -53,5 +61,21 @@ def index(request):
         'calories_max': calories_max or '',
         'total_recipes': total_recipes,
         'total_sucre': total_sucre,
-        'total_sale': total_sale
+        'total_sale': total_sale,
+        'user_favorites': user_favorites,
     })
+
+
+@login_required
+def toggle_favorite(request, product_id):
+    if request.method == "POST":
+        product = get_object_or_404(FoodProduct, id=product_id)
+        
+        if product.favorites.filter(id=request.user.id).exists():
+            product.favorites.remove(request.user)
+            return JsonResponse({'status': 'removed'})
+        else:
+            product.favorites.add(request.user)
+            return JsonResponse({'status': 'added'})
+            
+    return JsonResponse({'error': 'Requête invalide'}, status=400)

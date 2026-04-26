@@ -183,6 +183,11 @@
       border-color: var(--orange);
       background: rgba(255,255,255,0.1);
     }
+    .filter-pill.active {
+      border-color: var(--orange);
+      background: rgba(232, 98, 26, 0.15);
+      color: #fff;
+    }
     .filter-pill svg { opacity: 0.6; }
 
     /* Count dropdown */
@@ -228,6 +233,30 @@
       transform: translateY(-3px);
       box-shadow: 0 8px 32px rgba(0,0,0,0.28);
     }
+
+    /* Bouton favori sur les cartes */
+    .btn-fav {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.2s;
+    }
+    .btn-fav svg {
+      width: 14px; height: 14px;
+      fill: none; stroke: #fff; stroke-width: 2;
+      transition: fill 0.2s, stroke 0.2s;
+    }
+    .btn-fav.active svg { fill: #e8621a; stroke: #e8621a; }
+    .btn-fav:hover { background: rgba(0, 0, 0, 0.6); transform: scale(1.1); }
+    .recipe-card { position: relative; }
 
     .recipe-img {
       width: 110px;
@@ -687,7 +716,8 @@
           <option value="Difficile" style="color:#000;" {% if selected_difficulty == "Difficile" %}selected{% endif %}>Difficile</option>
         </select>
       </div>
-      <div class="filter-pill">
+      <div class="filter-pill {% if request.GET.favs == '1' %}active{% endif %}" onclick="toggleFavFilter()" style="cursor: pointer;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="{% if request.GET.favs == '1' %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
         my favs
       </div>
     </div>
@@ -704,6 +734,9 @@
     <div class="recipe-grid" id="recipeGrid">
       {% for product in products %}
       <div class="recipe-card" onclick="openDetail('{{ product.name|escapejs }}', '{{ product.image_url|default:'https://via.placeholder.com/400x220?text=No+Image' }}', '{{ product.nutriscore|upper|default:'?' }}', '{{ product.ingredients_text|escapejs }}', '{{ product.allergens_tags|escapejs }}', '{{ product.sugars_100g }}', '{{ product.salt_100g }}')">
+        <div class="btn-fav {% if product.id in user_favorites %}active{% endif %}" onclick="toggleFavorite(event, {{ product.id }}, this)" title="Ajouter aux favoris">
+          <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+        </div>
         <img class="recipe-img" src="{{ product.image_url|default:'https://via.placeholder.com/110x120?text=No+Image' }}" alt="{{ product.name }}" loading="lazy"/>
         <div class="recipe-info">
           <div>
@@ -1088,6 +1121,42 @@
         t.classList.add('show');
         setTimeout(function() { t.classList.remove('show'); }, 3000);
       }
+
+      // Bascule de favori en AJAX
+      window.toggleFavorite = async function(event, productId, btnElement) {
+        event.stopPropagation(); // Évite d'ouvrir la modale de détails au clic sur le coeur
+        
+        const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        try {
+          const res = await fetch(`/recipes/favorite/${productId}/`, { // Adapte l'URL selon ton urls.py
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': csrf,
+              'Content-Type': 'application/json'
+            }
+          });
+          const data = await res.json();
+          
+          if (data.status === 'added') {
+            btnElement.classList.add('active');
+            showToast('❤️ Ajouté aux favoris');
+          } else if (data.status === 'removed') {
+            btnElement.classList.remove('active');
+            showToast('🤍 Retiré des favoris');
+          }
+        } catch(err) {
+          console.error("Erreur d'ajout aux favoris", err);
+          showToast('Erreur lors de la modification des favoris');
+        }
+      };
+
+      // Filtre My Favs par paramètre URL
+      window.toggleFavFilter = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.get('favs') === '1' ? urlParams.delete('favs') : urlParams.set('favs', '1');
+        window.location.search = urlParams.toString();
+      };
 
     }); // DOMContentLoaded
   </script>
