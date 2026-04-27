@@ -162,11 +162,13 @@ def planner(request):
 
     days_of_week = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']
     meal_types = ['petit_dej', 'dejeuner', 'diner']
+    all_recipes = FoodProduct.objects.all()
 
     return render(request, 'planner.html', {
         'daily_calories': daily_calories, 'has_profile_data': has_profile_data,
         'favorites': favorites, 'plan_dict': json.dumps(plan_dict),
-        'days': days_of_week, 'meals': meal_types
+        'days': days_of_week, 'meals': meal_types,
+        'all_recipes': all_recipes
     })
 
 @login_required
