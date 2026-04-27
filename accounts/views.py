@@ -28,14 +28,30 @@ def signup_view(request):
 # ── Connexion ────────────────────────────────────────────
 def login_view(request):
     if request.user.is_authenticated:
+        if request.user.is_staff:
+            return redirect('backoffice:admin_dashboard')
         return redirect('recipes:index')
 
     form = LoginForm(request, data=request.POST or None)
     if request.method == 'POST' and form.is_valid():
         user = form.get_user()
         login(request, user)
-        next_url = request.GET.get('next', 'recipes:index')
+        if user.is_staff:
+            next_url = request.GET.get('next') or 'backoffice:admin_dashboard'
+        else:
+            next_url = request.GET.get('next', 'recipes:index')
         return redirect(next_url)
+
+    if request.method == 'POST' and not form.is_valid():
+        identifier = (request.POST.get('username') or '').strip()
+        password = request.POST.get('password') or ''
+        if identifier and '@' not in identifier and password:
+            user = User.objects.filter(username__iexact=identifier).first()
+            if user and user.check_password(password):
+                login(request, user)
+                if user.is_staff:
+                    return redirect(request.GET.get('next') or 'backoffice:admin_dashboard')
+                return redirect(request.GET.get('next', 'recipes:index'))
 
     return render(request, 'accounts/login.html', {'form': form})
 

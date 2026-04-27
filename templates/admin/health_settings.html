@@ -1,0 +1,205 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Health Logic | Biodelice Admin{% endblock %}
+{% block admin_section %}health{% endblock %}
+
+{% block admin_content %}
+  <section class="page-header">
+    <div>
+      <h1 class="page-title">Health configuration</h1>
+      <p class="page-subtitle">Manage diseases, allergens and the substitution engine that powers personalized nutrition decisions inside Biodelice.</p>
+    </div>
+    <div class="page-actions">
+      <span class="chip accent">Core feature</span>
+      <span class="chip success">Logic synced with planner</span>
+    </div>
+  </section>
+
+  <section class="grid grid-2">
+    <article class="card">
+      <div class="card-header">
+        <div class="card-kicker">Diseases management</div>
+        <h2 class="card-title">Conditions library</h2>
+      </div>
+      <div class="card-content section-stack">
+        <div class="preview-box">
+          {% for constraint in diseases %}
+            <div class="logic-row">
+              <div>
+                <strong>{{ constraint.name }}</strong>
+                <div class="muted tiny">{{ constraint.icon|default:"•" }} {{ constraint.color }}</div>
+              </div>
+              <form method="post" class="actions-row" style="margin-left:auto;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete_constraint" />
+                <input type="hidden" name="constraint_id" value="{{ constraint.pk }}" />
+                <button class="action-link" type="submit">Delete</button>
+              </form>
+            </div>
+          {% empty %}
+            <p class="muted">No disease configured yet.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-header">
+        <div class="card-kicker">Allergens management</div>
+        <h2 class="card-title">Allergen catalogue</h2>
+      </div>
+      <div class="card-content section-stack">
+        <div class="preview-box">
+          {% for constraint in allergens %}
+            <div class="logic-row">
+              <div>
+                <strong>{{ constraint.name }}</strong>
+                <div class="muted tiny">{{ constraint.icon|default:"•" }} {{ constraint.color }}</div>
+              </div>
+              <form method="post" class="actions-row" style="margin-left:auto;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete_constraint" />
+                <input type="hidden" name="constraint_id" value="{{ constraint.pk }}" />
+                <button class="action-link" type="submit">Delete</button>
+              </form>
+            </div>
+          {% empty %}
+            <p class="muted">No allergen configured yet.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="card" style="margin-top:18px;">
+    <div class="card-header">
+      <div class="card-kicker">Substitution engine</div>
+      <h2 class="card-title">Core logic table</h2>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Ingredient</th>
+            <th>Condition</th>
+            <th>Substitute</th>
+            <th>Difficulty</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for rule in rules %}
+            <tr>
+              <td>{{ rule.forbidden_ingredient }}</td>
+              <td><span class="chip warning">{{ rule.target_constraint.name }}</span></td>
+              <td><span class="chip accent">{{ rule.substitute }}</span></td>
+              <td>{{ rule.get_difficulty_display }}</td>
+              <td>
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="delete_rule" />
+                  <input type="hidden" name="rule_id" value="{{ rule.pk }}" />
+                  <button class="action-link" type="submit">Delete</button>
+                </form>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="5" class="muted">No substitution rule configured yet.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="grid grid-2" style="margin-top:18px;">
+    <article class="card">
+      <div class="card-header">
+        <div class="card-kicker">Add health constraint</div>
+        <h2 class="card-title">Disease or allergen</h2>
+      </div>
+      <div class="card-content">
+        <form method="post" class="form-grid">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="add_constraint" />
+          <div class="field-group">
+            <label for="{{ constraint_form.name.id_for_label }}">Name</label>
+            {{ constraint_form.name }}
+          </div>
+          <div class="field-group">
+            <label for="{{ constraint_form.constraint_type.id_for_label }}">Type</label>
+            {{ constraint_form.constraint_type }}
+          </div>
+          <div class="field-group">
+            <label for="{{ constraint_form.color.id_for_label }}">Color</label>
+            {{ constraint_form.color }}
+          </div>
+          <div class="field-group">
+            <label for="{{ constraint_form.icon.id_for_label }}">Icon</label>
+            {{ constraint_form.icon }}
+          </div>
+          <div class="page-actions" style="grid-column:1 / -1;">
+            <button class="btn btn-soft" type="submit">+ Add constraint</button>
+          </div>
+        </form>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-header">
+        <div class="card-kicker">Add substitution</div>
+        <h2 class="card-title">Rule composer</h2>
+      </div>
+      <div class="card-content">
+        <form method="post" class="form-grid">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="add_rule" />
+          <div class="field-group">
+            <label for="{{ rule_form.target_constraint.id_for_label }}">Condition</label>
+            {{ rule_form.target_constraint }}
+          </div>
+          <div class="field-group">
+            <label for="{{ rule_form.difficulty.id_for_label }}">Difficulty</label>
+            {{ rule_form.difficulty }}
+          </div>
+          <div class="field-group">
+            <label for="{{ rule_form.forbidden_ingredient.id_for_label }}">Ingredient</label>
+            {{ rule_form.forbidden_ingredient }}
+          </div>
+          <div class="field-group">
+            <label for="{{ rule_form.substitute.id_for_label }}">Substitute</label>
+            {{ rule_form.substitute }}
+          </div>
+          <div class="page-actions" style="grid-column:1 / -1;">
+            <button class="btn btn-primary" type="submit">Save substitution rule</button>
+          </div>
+        </form>
+      </div>
+    </article>
+  </section>
+
+  <section class="card" style="margin-top:18px;">
+    <div class="card-header">
+      <div class="card-kicker">Logic preview panel</div>
+      <h2 class="card-title">Human-readable rules</h2>
+    </div>
+    <div class="card-content">
+      <div class="preview-box">
+        {% for rule in rules %}
+          <div class="logic-row">
+            <span>If user has</span>
+            <span class="chip warning">{{ rule.target_constraint.name }}</span>
+            <span class="logic-arrow">→</span>
+            <span>replace</span>
+            <span class="chip">{{ rule.forbidden_ingredient }}</span>
+            <span>with</span>
+            <span class="chip accent">{{ rule.substitute }}</span>
+          </div>
+        {% empty %}
+          <p class="muted">No preview available yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+{% endblock %}

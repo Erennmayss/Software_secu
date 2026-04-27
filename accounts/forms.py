@@ -32,8 +32,8 @@ class SignupForm(UserCreationForm):
 
 
 class LoginForm(AuthenticationForm):
-    username = forms.EmailField(label='Adresse e-mail', widget=forms.EmailInput(attrs={
-        'placeholder': 'vous@exemple.com',
+    username = forms.CharField(label='Adresse e-mail ou identifiant', widget=forms.TextInput(attrs={
+        'placeholder': 'vous@exemple.com ou admin',
         'autofocus': True,
     }))
 

@@ -1,0 +1,219 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Dashboard | Biodelice Admin{% endblock %}
+{% block admin_section %}dashboard{% endblock %}
+
+{% block admin_content %}
+  <section class="page-header">
+    <div>
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-subtitle">Overview of your application with recipes, members and health adaptation signals across the platform.</p>
+    </div>
+    <div class="page-actions">
+      <span class="chip accent">1,284 sessions this week</span>
+      <span class="chip success">89% healthy match rate</span>
+      <span class="chip warning">14 pending updates</span>
+    </div>
+  </section>
+
+  <section class="grid grid-4">
+    <article class="card kpi-card">
+      <div class="kpi-top">
+        <div>
+          <div class="kpi-label">Total users</div>
+          <div class="kpi-value">{{ total_users|default:"12,480" }}</div>
+        </div>
+        <div class="kpi-icon">👥</div>
+      </div>
+      <div class="kpi-trend"><span class="trend-up">↑ 8.2%</span> vs last month</div>
+    </article>
+
+    <article class="card kpi-card">
+      <div class="kpi-top">
+        <div>
+          <div class="kpi-label">Total recipes</div>
+          <div class="kpi-value">{{ total_recipes|default:"468" }}</div>
+        </div>
+        <div class="kpi-icon">🍽</div>
+      </div>
+      <div class="kpi-trend"><span class="trend-up">↑ 24</span> newly published</div>
+    </article>
+
+    <article class="card kpi-card">
+      <div class="kpi-top">
+        <div>
+          <div class="kpi-label">Estimated daily substitutions</div>
+          <div class="kpi-value">{{ daily_subs|default:"0" }}</div>
+        </div>
+        <div class="kpi-icon">✦</div>
+      </div>
+      <div class="kpi-trend"><span class="trend-up">↑ {{ daily_subs|default:"0" }}</span> constraint-driven suggestions</div>
+    </article>
+
+    <article class="card kpi-card">
+      <div class="kpi-top">
+        <div>
+          <div class="kpi-label">Favorites added</div>
+          <div class="kpi-value">{{ favorite_recipes|default:"8,912" }}</div>
+        </div>
+        <div class="kpi-icon">❤</div>
+      </div>
+      <div class="kpi-trend"><span class="trend-down">↓ 1.4%</span> vs previous week</div>
+    </article>
+  </section>
+
+  <section class="grid grid-2" style="margin-top:18px;">
+    <article class="card chart-box">
+      <div class="card-kicker">Recipe analytics</div>
+      <h2 class="card-title">Recipes per category</h2>
+      <div class="chart-placeholder">
+        <div class="bar">
+          <div class="bar-value">142</div>
+          <div class="bar-fill" style="height: 75%;"></div>
+          <div class="bar-label">Salé</div>
+        </div>
+        <div class="bar">
+          <div class="bar-value">96</div>
+          <div class="bar-fill" style="height: 52%;"></div>
+          <div class="bar-label">Sucré</div>
+        </div>
+        <div class="bar">
+          <div class="bar-value">124</div>
+          <div class="bar-fill" style="height: 68%;"></div>
+          <div class="bar-label">Healthy</div>
+        </div>
+        <div class="bar">
+          <div class="bar-value">106</div>
+          <div class="bar-fill" style="height: 59%;"></div>
+          <div class="bar-label">Vegan</div>
+        </div>
+      </div>
+    </article>
+
+    <article class="card chart-box">
+      <div class="card-kicker">Acquisition</div>
+      <h2 class="card-title">User growth</h2>
+      <div class="line-chart">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="lineGlow" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ff8c4e" stop-opacity="0.28"></stop>
+              <stop offset="100%" stop-color="#ff8c4e" stop-opacity="0"></stop>
+            </linearGradient>
+          </defs>
+          <path d="M0,80 C8,72 12,69 18,66 C24,62 28,59 34,58 C40,57 44,52 50,49 C56,46 60,44 66,40 C72,37 78,32 84,28 C90,24 95,19 100,14 L100,100 L0,100 Z" fill="url(#lineGlow)"></path>
+          <path d="M0,80 C8,72 12,69 18,66 C24,62 28,59 34,58 C40,57 44,52 50,49 C56,46 60,44 66,40 C72,37 78,32 84,28 C90,24 95,19 100,14" fill="none" stroke="#ff8c4e" stroke-width="2.8" stroke-linecap="round"></path>
+          <circle cx="18" cy="66" r="2.2" fill="#ff8c4e"></circle>
+          <circle cx="50" cy="49" r="2.2" fill="#ff8c4e"></circle>
+          <circle cx="84" cy="28" r="2.2" fill="#ff8c4e"></circle>
+        </svg>
+        <div class="axis-labels">
+          <span>Mon</span>
+          <span>Tue</span>
+          <span>Wed</span>
+          <span>Thu</span>
+          <span>Fri</span>
+          <span>Sat</span>
+          <span>Sun</span>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="grid grid-2" style="margin-top:18px;">
+    <article class="card">
+      <div class="card-header">
+        <div class="card-kicker">Top content</div>
+        <h2 class="card-title">Top recipes</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Recipe</th>
+              <th>Favorites</th>
+              <th>Adaptation score</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for recipe in top_recipes %}
+            <tr>
+              <td>
+                <div class="item-cell">
+                  <img class="thumb" src="{% if recipe.image %}{{ recipe.image.url }}{% elif recipe.image_url %}{{ recipe.image_url }}{% else %}https://via.placeholder.com/120x120?text=Recipe{% endif %}" alt="{{ recipe.name }}" />
+                  <div class="title-stack">
+                    <strong>{{ recipe.name }}</strong>
+                    <span>{{ recipe.get_category_display|default:recipe.category }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>{{ recipe.favorites_count|default:0 }} ❤</td>
+              <td>{{ recipe.nutriscore|default:"A" }}</td>
+              <td><span class="badge badge-published">Published</span></td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="muted">Aucune recette disponible pour le moment.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-header">
+        <div class="card-kicker">Recent activity</div>
+        <h2 class="card-title">Latest events</h2>
+      </div>
+      <div class="timeline">
+        {% for recipe in recent_recipes %}
+          <div class="timeline-item">
+            <strong>Recipe "{{ recipe.name }}" added</strong>
+            <span>Recipe #{{ recipe.pk }}</span>
+          </div>
+        {% empty %}
+          <div class="timeline-item">
+            <strong>Aucune activite recente</strong>
+            <span>Le catalogue est encore vide.</span>
+          </div>
+        {% endfor %}
+      </div>
+    </article>
+  </section>
+
+  <section class="grid grid-2" style="margin-top:18px;">
+    <article class="card">
+      <div class="card-header">
+        <div class="card-kicker">Health insights</div>
+        <h2 class="card-title">User constraint distribution</h2>
+      </div>
+      <div class="card-content section-stack">
+        {% for item in constraint_distribution %}
+          <div class="logic-row">
+            <span class="chip" style="background:{{ item.color }}22;border-color:{{ item.color }}55;">{{ item.icon|default:"•" }} {{ item.name }}</span>
+            <span class="muted">{{ item.user_count }} users</span>
+            <span class="logic-arrow">{{ item.percentage }}%</span>
+          </div>
+        {% empty %}
+          <p class="muted">Aucune contrainte de sante associee aux utilisateurs.</p>
+        {% endfor %}
+      </div>
+    </article>
+
+    <article class="card">
+    <div class="card-header">
+      <div class="card-kicker">Quick actions</div>
+      <h2 class="card-title">Admin shortcuts</h2>
+    </div>
+    <div class="card-content">
+      <div class="page-actions">
+        <a class="btn btn-primary" href="{% url 'backoffice:recipe_create' %}">+ Add recipe</a>
+        <a class="btn btn-soft" href="{% url 'backoffice:health_settings' %}">+ Add disease</a>
+        <a class="btn" href="{% url 'backoffice:health_settings' %}">+ Add allergen</a>
+      </div>
+    </div>
+    </article>
+  </section>
+{% endblock %}

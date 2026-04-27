@@ -4,7 +4,17 @@ import random
 
 
 class HealthConstraint(models.Model):
+    TYPE_DISEASE = 'disease'
+    TYPE_ALLERGEN = 'allergen'
+    TYPE_CHOICES = [
+        (TYPE_DISEASE, 'Maladie'),
+        (TYPE_ALLERGEN, 'Allergene'),
+    ]
+
     name = models.CharField(max_length=100, unique=True)
+    constraint_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TYPE_DISEASE)
+    color = models.CharField(max_length=20, default='#e8621a')
+    icon = models.CharField(max_length=50, blank=True, default='')
     
     def __str__(self):
         return self.name
@@ -26,6 +36,7 @@ class User(AbstractUser):
     
     restrictions = models.TextField(blank=True)  # restrictions religieuses/allergies
     aliments_a_eviter = models.TextField(blank=True)  # aliments à éviter
+    activity_level = models.CharField(max_length=20, blank=True, default='modere')
     culinary_level = models.CharField(max_length=20, choices=[
         ('debutant', 'Débutant'),
         ('intermediaire', 'Intermédiaire'),
@@ -47,16 +58,34 @@ class PasswordResetCode(models.Model):
 
 
 class FoodProduct(models.Model):
+    CATEGORY_CHOICES = [
+        ('sale', 'Sale'),
+        ('sucre', 'Sucre'),
+        ('healthy', 'Healthy'),
+        ('vegan', 'Vegan'),
+    ]
+    DIFFICULTY_CHOICES = [
+        ('easy', 'Facile'),
+        ('medium', 'Modere'),
+        ('hard', 'Complexe'),
+    ]
+    NUTRISCORE_CHOICES = [(grade, grade) for grade in ['A', 'B', 'C', 'D', 'E']]
+
     name = models.CharField(max_length=255)
-    category = models.CharField(max_length=50, default='sale')
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='sale')
     ingredients_text = models.TextField(blank=True)
+    preparation_steps = models.TextField(blank=True)
     allergens_tags = models.TextField(blank=True)
-    nutriscore = models.CharField(max_length=1, blank=True)
+    nutriscore = models.CharField(max_length=1, choices=NUTRISCORE_CHOICES, blank=True)
     sugars_100g = models.FloatField(default=0)
     salt_100g = models.FloatField(default=0)
     calories = models.IntegerField(default=0)
-    difficulty = models.CharField(max_length=20, blank=True)
+    proteins = models.FloatField(default=0)
+    carbs = models.FloatField(default=0)
+    fats = models.FloatField(default=0)
+    difficulty = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, blank=True)
     image_url = models.URLField(blank=True)
+    image = models.ImageField(upload_to='recipes/', null=True, blank=True)
     favorites = models.ManyToManyField('User', related_name='favorite_products', blank=True)
 
     def __str__(self):

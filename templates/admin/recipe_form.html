@@ -1,0 +1,176 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Recipe Editor | Biodelice Admin{% endblock %}
+{% block admin_section %}recipe_form{% endblock %}
+
+{% block admin_content %}
+  <section class="page-header">
+    <div>
+      <h1 class="page-title">{% if page_mode == 'edit' %}Edit recipe{% else %}Create recipe{% endif %}</h1>
+      <p class="page-subtitle">Use the model form to manage nutrition data, image upload or URL, ingredients and preparation steps for the Biodelice catalogue.</p>
+    </div>
+    <div class="page-actions">
+      <span class="chip accent">Staff only</span>
+      {% if recipe %}<span class="chip">Recipe #{{ recipe.pk }}</span>{% endif %}
+    </div>
+  </section>
+
+  <form method="post" enctype="multipart/form-data" class="section-stack">
+    {% csrf_token %}
+
+    <article class="card">
+      <div class="card-header">
+        <div class="card-kicker">Basic info</div>
+        <h2 class="card-title">Core recipe details</h2>
+      </div>
+      <div class="card-content">
+        <div class="form-grid">
+          <div class="field-group">
+            <label for="{{ form.name.id_for_label }}">Title</label>
+            {{ form.name }}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.category.id_for_label }}">Category</label>
+            {{ form.category }}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.difficulty.id_for_label }}">Difficulty</label>
+            {{ form.difficulty }}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.calories.id_for_label }}">Calories</label>
+            {{ form.calories }}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.image_upload.id_for_label }}">Image upload</label>
+            {{ form.image_upload }}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.image_url.id_for_label }}">Image URL</label>
+            {{ form.image_url }}
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-header">
+        <div class="card-kicker">Nutrition</div>
+        <h2 class="card-title">Macronutrients and score</h2>
+      </div>
+      <div class="card-content">
+        <div class="form-grid">
+          <div class="field-group">
+            <label for="{{ form.proteins.id_for_label }}">Proteins</label>
+            {{ form.proteins }}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.carbs.id_for_label }}">Carbs</label>
+            {{ form.carbs }}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.fats.id_for_label }}">Fats</label>
+            {{ form.fats }}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.nutriscore.id_for_label }}">Nutriscore</label>
+            {{ form.nutriscore }}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.sugars_100g.id_for_label }}">Sugars / 100g</label>
+            {{ form.sugars_100g }}
+          </div>
+          <div class="field-group">
+            <label for="{{ form.salt_100g.id_for_label }}">Salt / 100g</label>
+            {{ form.salt_100g }}
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-header">
+        <div class="card-kicker">Ingredients</div>
+        <h2 class="card-title">Textarea formatting for database storage</h2>
+      </div>
+      <div class="card-content">
+        <div class="field-group">
+          <label for="{{ form.ingredients_text.id_for_label }}">Ingredients, one per line</label>
+          {{ form.ingredients_text }}
+        </div>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-header">
+        <div class="card-kicker">Preparation</div>
+        <h2 class="card-title">Steps</h2>
+      </div>
+      <div class="card-content">
+        <div class="field-group">
+          <label for="{{ form.preparation_steps.id_for_label }}">Steps, one per line</label>
+          {{ form.preparation_steps }}
+        </div>
+      </div>
+    </article>
+
+    <section class="grid grid-2">
+      <article class="card">
+        <div class="card-header">
+          <div class="card-kicker">Health metadata</div>
+          <h2 class="card-title">Allergens and tags</h2>
+        </div>
+        <div class="card-content section-stack">
+          <div class="field-group">
+            <label for="{{ form.allergens_tags.id_for_label }}">Allergens or tags</label>
+            {{ form.allergens_tags }}
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-header">
+          <div class="card-kicker">Substitution preview</div>
+          <h2 class="card-title">Rule compatibility</h2>
+        </div>
+        <div class="card-content">
+          <div class="preview-box">
+            <div class="logic-row">
+              <span class="chip">Image upload</span>
+              <span class="logic-arrow">→</span>
+              <span class="muted">If a file is uploaded, it overrides the URL field.</span>
+            </div>
+            <div class="logic-row">
+              <span class="chip">Ingredients text</span>
+              <span class="logic-arrow">→</span>
+              <span class="muted">Blank lines are removed before saving to the database.</span>
+            </div>
+            <div class="logic-row">
+              <span class="chip">Preparation steps</span>
+              <span class="logic-arrow">→</span>
+              <span class="muted">Steps are normalized line by line for clean storage.</span>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    {% if form.errors %}
+      <section class="card">
+        <div class="card-content">
+          <div class="message error">
+            {{ form.errors }}
+          </div>
+        </div>
+      </section>
+    {% endif %}
+
+    <div class="sticky-bar">
+      <p>Save the recipe to update the meal planning and health adaptation catalogue.</p>
+      <div class="page-actions">
+        <a class="btn" href="{% url 'backoffice:recipe_list' %}">Cancel</a>
+        <button class="btn btn-primary" type="submit">{% if page_mode == 'edit' %}Update recipe{% else %}Create recipe{% endif %}</button>
+      </div>
+    </div>
+  </form>
+{% endblock %}

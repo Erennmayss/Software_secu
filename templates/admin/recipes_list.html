@@ -1,0 +1,156 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Recipes | Biodelice Admin{% endblock %}
+{% block admin_section %}recipes{% endblock %}
+
+{% block admin_content %}
+  <section class="page-header">
+    <div>
+      <h1 class="page-title">Recipes</h1>
+      <p class="page-subtitle">Manage the recipe catalogue with search, category filters and quick edit actions for the Biodelice backoffice.</p>
+    </div>
+    <div class="page-actions">
+      <a class="btn btn-primary" href="{% url 'backoffice:recipe_create' %}">+ Add Recipe</a>
+    </div>
+  </section>
+
+  <section class="card">
+    <form method="get" class="filters">
+      <input class="control filter-grow" type="text" name="q" value="{{ search_query }}" placeholder="Search by recipe name" />
+      <select class="select filter-sm" name="category">
+        <option value="">Category</option>
+        {% for value, label in category_choices %}
+          <option value="{{ value }}" {% if category_filter == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-soft" type="submit">Filter</button>
+      <a class="btn btn-ghost" href="{% url 'backoffice:recipe_list' %}">Reset</a>
+      <div class="segmented" id="viewToggle">
+        <button type="button" class="active" data-view="table">Table</button>
+        <button type="button" data-view="grid">Cards</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="card" style="margin-top:18px;">
+    <div class="filters" style="padding-top:14px;padding-bottom:14px;justify-content:space-between;">
+      <div class="page-actions">
+        <button class="btn" type="button">Delete selected</button>
+        <button class="btn btn-soft" type="button">Publish selected</button>
+      </div>
+      <span class="muted small">{{ products|length }} recipe{{ products|length|pluralize }} in current result</span>
+    </div>
+  </section>
+
+  <section id="recipesTableView" class="card" style="margin-top:18px;">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th><input type="checkbox" /></th>
+            <th>Image</th>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Calories</th>
+            <th>Nutriscore</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for product in products %}
+            <tr>
+              <td><input type="checkbox" /></td>
+              <td><img class="thumb" src="{% if product.image %}{{ product.image.url }}{% elif product.image_url %}{{ product.image_url }}{% else %}https://via.placeholder.com/120x120?text=Recipe{% endif %}" alt="{{ product.name }}" /></td>
+              <td><strong>{{ product.name }}</strong></td>
+              <td>{{ product.get_category_display|default:product.category }}</td>
+              <td>{{ product.calories }} kcal</td>
+              <td><span class="badge badge-{{ product.nutriscore|lower|default:'c' }}">{{ product.nutriscore|default:"-" }}</span></td>
+              <td><span class="badge badge-published">Published</span></td>
+              <td>
+                <div class="actions-row">
+                  <a href="{% url 'backoffice:recipe_update' product.pk %}" class="action-link">Edit</a>
+                  <form method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="delete_recipe_id" value="{{ product.pk }}" />
+                    <button class="action-link" type="submit">Delete</button>
+                  </form>
+                  <a href="{% url 'backoffice:recipe_update' product.pk %}" class="action-link">View</a>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="8" class="muted">No recipe matches the current filters.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="recipesGridView" class="hide" style="margin-top:18px;">
+    <div class="cards-grid">
+      {% for product in products %}
+        <article class="card recipe-card">
+          <div class="recipe-media">
+            <img src="{% if product.image %}{{ product.image.url }}{% elif product.image_url %}{{ product.image_url }}{% else %}https://via.placeholder.com/640x360?text=Recipe{% endif %}" alt="{{ product.name }}" />
+            <div class="recipe-overlay">
+              <span class="badge badge-{{ product.nutriscore|lower|default:'c' }}">{{ product.nutriscore|default:"-" }}</span>
+              <div class="actions-row">
+                <a href="{% url 'backoffice:recipe_update' product.pk %}" class="action-link">View</a>
+                <a href="{% url 'backoffice:recipe_update' product.pk %}" class="action-link">Edit</a>
+              </div>
+            </div>
+          </div>
+          <div class="recipe-body">
+            <strong>{{ product.name }}</strong>
+            <div class="meta-row">
+              <span class="chip">{{ product.calories }} kcal</span>
+              <span class="chip accent">{{ product.get_category_display|default:product.category }}</span>
+              <span class="chip success">Published</span>
+            </div>
+          </div>
+        </article>
+      {% empty %}
+        <p class="muted">No recipe matches the current filters.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:18px;">
+    <div class="filters" style="justify-content:space-between;">
+      <span class="muted small">Showing {{ products|length }} recipe{{ products|length|pluralize }}</span>
+      <div class="page-actions">
+        <button class="btn btn-ghost" type="button">Previous</button>
+        <button class="btn btn-soft" type="button">1</button>
+        <button class="btn" type="button">2</button>
+        <button class="btn" type="button">3</button>
+        <button class="btn btn-ghost" type="button">Next</button>
+      </div>
+    </div>
+  </section>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    (function () {
+      const toggle = document.getElementById('viewToggle');
+      const tableView = document.getElementById('recipesTableView');
+      const gridView = document.getElementById('recipesGridView');
+      if (!toggle || !tableView || !gridView) return;
+
+      toggle.querySelectorAll('button').forEach(function (button) {
+        button.addEventListener('click', function () {
+          toggle.querySelectorAll('button').forEach(function (item) {
+            item.classList.remove('active');
+          });
+          button.classList.add('active');
+          const isGrid = button.getAttribute('data-view') === 'grid';
+          tableView.classList.toggle('hide', isGrid);
+          gridView.classList.toggle('hide', !isGrid);
+        });
+      });
+    })();
+  </script>
+{% endblock %}

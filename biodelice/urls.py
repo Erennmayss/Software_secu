@@ -11,6 +11,8 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     # Routes pour recipes
     path('recipes/', include('recipes.urls')),
+    # Backoffice staff-only
+    path('backoffice/', include('backoffice.urls')),
     # Route directe pour l'onboarding (solution de secours)
     path('onboarding/save/', accounts_views.save_onboarding, name='save_onboarding'),
 ]
