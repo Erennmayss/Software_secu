@@ -15,33 +15,20 @@ class HealthConstraint(models.Model):
     constraint_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TYPE_DISEASE)
     color = models.CharField(max_length=20, default='#e8621a')
     icon = models.CharField(max_length=50, blank=True, default='')
-
+    
     def __str__(self):
         return self.name
 
+# accounts/models.py - Ajoute ces champs à la classe User
 
 class User(AbstractUser):
-    """Utilisateur personnalise Biodelice."""
-
-    ACTIVITY_LEVEL_CHOICES = [
-        ('sedentary', 'Sedentaire'),
-        ('light', 'Legere'),
-        ('moderate', 'Moderee'),
-        ('active', 'Active'),
-        ('very_active', 'Tres active'),
-    ]
-
-    CULINARY_LEVEL_CHOICES = [
-        ('debutant', 'Debutant'),
-        ('intermediaire', 'Intermediaire'),
-        ('avance', 'Avance'),
-    ]
-
+    """Utilisateur personnalisé Biodelice."""
     email = models.EmailField(unique=True)
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     bio = models.CharField(max_length=200, blank=True)
     health_constraints = models.ManyToManyField(HealthConstraint, blank=True)
-
+    
+    # Nouveaux champs pour l'onboarding
     age = models.IntegerField(null=True, blank=True)
     weight = models.FloatField(null=True, blank=True)  # poids en kg
     height = models.FloatField(null=True, blank=True)  # taille en cm
@@ -49,6 +36,7 @@ class User(AbstractUser):
     
     restrictions = models.TextField(blank=True)  # restrictions religieuses/allergies
     aliments_a_eviter = models.TextField(blank=True)  # aliments à éviter
+    activity_level = models.CharField(max_length=20, blank=True, default='modere')
     culinary_level = models.CharField(max_length=20, choices=[
         ('debutant', 'Débutant'),
         ('intermediaire', 'Intermédiaire'),
@@ -57,11 +45,6 @@ class User(AbstractUser):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
-
-    @property
-    def full_name(self):
-        full_name = f"{self.first_name} {self.last_name}".strip()
-        return full_name or self.email
 
 
 class PasswordResetCode(models.Model):
