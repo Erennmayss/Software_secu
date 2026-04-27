@@ -20,19 +20,18 @@
 html,body{min-height:100vh;font-family:'DM Sans',sans-serif;background:var(--g0);color:var(--text);overflow-x:hidden}
 
 /* ══ LAYOUT & TOPBAR ══ */
-.layout{display:flex;min-height:100vh}
+.layout{display:flex;min-height:100vh;width:100%;}
 .main {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   overflow: hidden;
-  margin-left: 260px;
 }
 
 .topbar{
   display:flex;align-items:center;justify-content:space-between;
-  padding:16px 28px; background:rgba(13,31,20,0.9); backdrop-filter:blur(16px);
+  padding:24px 48px; background:rgba(13,31,20,0.9); backdrop-filter:blur(16px);
   border-bottom:1px solid rgba(255,255,255,0.05);
   position:sticky;top:0;z-index:50; gap:20px;
 }
@@ -91,7 +90,6 @@ html,body{min-height:100vh;font-family:'DM Sans',sans-serif;background:var(--g0)
 .toast.show{opacity:1;transform:translateY(0)}
 
 @media(max-width:700px) {
-  .main { margin-left: 0; }
   .sidebar { display: none; }
 }
 
