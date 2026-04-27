@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Biodelice</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --g0:#0d1f14; --g1:#132219; --g2:#1a3024; --g3:#224030;
+  --g4:#2d5a3d; --g5:#3a7050; --o1:#e8621a; --o2:#ff7a36;
+  --o3:#ffa070; --cream:#fdf6ee; --white:#ffffff; --text:#ffffff;
+  --muted:rgba(255,255,255,0.45); --sub:rgba(255,255,255,0.18);
+  --card:#1a3024; --card2:#1f3829; --radius:14px; --radius-sm:8px;
+  --red:#e05c5c; --yellow:#f4c430; --blue:#4a9eff; --purple:#9b6fff;
+}
+
+html,body{min-height:100vh;font-family:'DM Sans',sans-serif;background:var(--g0);color:var(--text);overflow-x:hidden}
+
+/* ══ LAYOUT & TOPBAR ══ */
+.layout{display:flex;min-height:100vh}
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow: hidden;
+  margin-left: 260px;
+}
+
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 28px; background:rgba(13,31,20,0.9); backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  position:sticky;top:0;z-index:50; gap:20px;
+}
+.topbar-left{display:flex;flex-direction:column}
+.page-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:600;color:#fff}
+.page-sub{font-size:0.75rem;color:var(--muted);margin-top:2px}
+.topbar-right{display:flex;align-items:center;gap:16px}
+
+.search-box{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1);
+  border-radius:10px;padding:9px 14px; width:260px;transition:border-color .2s;
+}
+.search-box:focus-within{border-color:rgba(232,98,26,0.5)}
+.search-box input{flex:1;background:transparent;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:300;color:#fff}
+.search-box input::placeholder{color:rgba(255,255,255,0.3)}
+
+/* ══ DROPDOWN & MODAL PROFIL ══ */
+.profile-wrap{position:relative;}
+.avatar-btn{width:38px;height:38px;border-radius:50%;overflow:hidden;border:2px solid transparent;cursor:pointer;transition:all 0.2s;}
+.avatar-btn:hover, .avatar-btn.open{border-color:var(--o1);}
+.avatar-btn img{width:100%;height:100%;object-fit:cover}
+
+.dropdown{
+  position:absolute;top:calc(100% + 10px);right:0;width:190px;
+  background:var(--g1);border:1px solid rgba(255,255,255,0.1);border-radius:12px;
+  box-shadow:0 12px 40px rgba(0,0,0,0.4);opacity:0;transform:translateY(-8px) scale(0.97);
+  pointer-events:none;transition:all 0.2s;z-index:200;
+}
+.dropdown.show{opacity:1;transform:translateY(0) scale(1);pointer-events:all;}
+.dropdown-header{padding:16px 18px 12px;border-bottom:1px solid rgba(255,255,255,0.08);}
+.dropdown-header .d-name{font-size:0.82rem;font-weight:600;color:#fff;}
+.dropdown-header .d-email{font-size:0.68rem;color:var(--muted);margin-top:2px;}
+.dropdown-item{display:flex;align-items:center;gap:12px;padding:13px 18px;font-size:0.8rem;color:rgba(255,255,255,0.8);cursor:pointer;transition:all 0.18s;}
+.dropdown-item:hover{background:rgba(255,255,255,0.05);color:#fff;}
+.dropdown-item.logout{color:var(--red);}
+.dropdown-item.logout:hover{background:rgba(224,92,92,0.1);}
+.dropdown-item svg{width:15px;height:15px;opacity:0.7;}
+
+/* Modale Profil */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:300;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s;}
+.modal-overlay.show{opacity:1;pointer-events:all;}
+.modal{background:var(--g1);border:1px solid rgba(255,255,255,0.1);border-radius:18px;width:100%;max-width:500px;padding:30px;box-shadow:0 24px 80px rgba(0,0,0,0.5);transform:translateY(20px);transition:transform 0.3s;}
+.modal-overlay.show .modal{transform:translateY(0);}
+.modal-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}
+.modal-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:600;}
+.modal-close{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.08);border:none;color:rgba(255,255,255,0.7);cursor:pointer;font-size:1rem;}
+.modal-field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.modal-field label{font-size:0.7rem;color:var(--muted);}
+.modal-field input{padding:11px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-family:'DM Sans';}
+.modal-field input:focus{border-color:var(--o1);background:rgba(255,255,255,0.08);outline:none;}
+.btn-save{padding:12px;background:var(--o1);color:#fff;border:none;border-radius:8px;cursor:pointer;width:100%;font-weight:600;margin-top:10px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--g3);color:#fff;padding:12px 20px;border-radius:10px;font-size:.8rem;border-left:3px solid var(--o1);box-shadow:0 8px 32px rgba(0,0,0,0.4);transform:translateY(12px);opacity:0;transition:all .3s;z-index:999;pointer-events:none;}
+.toast.show{opacity:1;transform:translateY(0)}
+
+@media(max-width:700px) {
+  .main { margin-left: 0; }
+  .sidebar { display: none; }
+}
+
+{% block extra_css %}{% endblock %}
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <!-- Inclusion du menu latéral -->
+  {% include 'sidebar.html' %}
+
+  <div class="main">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="page-title">{% block page_title %}Biodelice{% endblock %}</div>
+        <div class="page-sub">{% block page_sub %}Bienvenue{% endblock %}</div>
+      </div>
+      <div class="topbar-right">
+        <form class="search-box" method="GET" action="{% url 'recipes:index' %}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Rechercher une recette..."/>
+        </form>
+        
+        <div class="profile-wrap">
+          <div class="avatar-btn" id="avatarBtn">
+            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&q=80" alt="avatar"/>
+          </div>
+          <!-- Dropdown Profil -->
+          <div class="dropdown" id="dropdown">
+            <div class="dropdown-header">
+              <div class="d-name">{{ request.user.full_name|default:request.user.email }}</div>
+              <div class="d-email">{{ request.user.email }}</div>
+            </div>
+            <div class="dropdown-item" id="editProfileBtn">Modifier le profil</div>
+            <div class="dropdown-item logout" id="logoutBtn">Se déconnecter</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENU DYNAMIQUE DE LA PAGE -->
+    {% block content %}{% endblock %}
+
+  </div>
+</div>
+
+<!-- MODALE DE PROFIL (Partagée partout) -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-top">
+      <span class="modal-title">Modifier le profil</span>
+      <button class="modal-close" id="modalCloseBtn">✕</button>
+    </div>
+    <form id="profileForm">
+      {% csrf_token %}
+      <div class="modal-field">
+        <label>Prénom</label>
+        <input type="text" id="firstName" value="{{ request.user.first_name }}"/>
+      </div>
+      <div class="modal-field">
+        <label>Nom</label>
+        <input type="text" id="lastName" value="{{ request.user.last_name }}"/>
+      </div>
+      <div class="modal-field">
+        <label>Adresse e-mail</label>
+        <input type="email" id="email" value="{{ request.user.email }}"/>
+      </div>
+      <button type="submit" class="btn-save">Enregistrer</button>
+    </form>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── Toast
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // ── Menu Profil
+  const avatarBtn = document.getElementById('avatarBtn');
+  const dropdown = document.getElementById('dropdown');
+  avatarBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    avatarBtn.classList.toggle('open');
+    dropdown.classList.toggle('show');
+  });
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.profile-wrap')) {
+      avatarBtn.classList.remove('open');
+      dropdown.classList.remove('show');
+    }
+  });
+
+  // ── Modale Profil
+  const modalOverlay = document.getElementById('modalOverlay');
+  document.getElementById('editProfileBtn').addEventListener('click', () => {
+    dropdown.classList.remove('show');
+    modalOverlay.classList.add('show');
+  });
+  document.getElementById('modalCloseBtn').addEventListener('click', () => modalOverlay.classList.remove('show'));
+  
+  // ── Déconnexion
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    showToast('Déconnexion en cours...');
+    setTimeout(() => { window.location.href = "{% url 'accounts:logout' %}"; }, 1000);
+  });
+
+  // ── Sauvegarde Profil
+  document.getElementById('profileForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    try {
+      const res = await fetch('/accounts/profile/update/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+        body: JSON.stringify({
+          action: 'profile',
+          first_name: document.getElementById('firstName').value,
+          last_name: document.getElementById('lastName').value,
+          email: document.getElementById('email').value
+        })
+      });
+      const data = await res.json();
+      if(data.success) {
+        modalOverlay.classList.remove('show');
+        document.querySelector('.d-name').textContent = data.full_name;
+        showToast('Profil mis à jour avec succès');
+      }
+    } catch(err) { console.log(err); }
+  });
+
+  // ── Favoris AJAX
+  window.toggleFav = async function(e, productId, btnElement) {
+    e.stopPropagation();
+    const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    try {
+      const res = await fetch(`/recipes/favorite/${productId}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrf, 'Content-Type': 'application/json' }
+      });
+      const data = await res.json();
+      if (data.status === 'added') {
+        btnElement.classList.add('active');
+        showToast('❤️ Ajouté aux favoris');
+      } else if (data.status === 'removed') {
+        btnElement.classList.remove('active');
+        showToast('🤍 Retiré des favoris');
+      }
+    } catch(err) { showToast('Erreur lors de la mise à jour des favoris'); }
+  };
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

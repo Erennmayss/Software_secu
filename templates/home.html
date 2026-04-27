@@ -25,6 +25,7 @@
       font-family: 'Poppins', sans-serif;
       background: var(--green);
       color: #fff;
+      display: flex; /* Préparation pour la sidebar */
     }
 
     /* ── NAVBAR ── */
@@ -39,6 +40,8 @@
       top: 0;
       z-index: 100;
       border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: rgba(30, 61, 42, 0.85);
+      backdrop-filter: blur(10px);
     }
 
     /* Search bar with gradient border */
@@ -85,22 +88,53 @@
     .search-bar input::placeholder { color: rgba(255,255,255,0.45); }
     .search-bar svg { color: rgba(255,255,255,0.4); flex-shrink: 0; }
 
-    /* Nav links */
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 28px;
-      list-style: none;
+    /* ── SIDEBAR ── */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0;
+      width: 250px;
+      height: 100vh;
+      background: #162b1e;
+      border-right: 1px solid rgba(255,255,255,0.06);
+      padding: 28px 24px;
+      z-index: 150;
     }
-    .nav-links a {
-      font-size: 0.84rem;
-      font-weight: 400;
-      color: rgba(255,255,255,0.7);
+    .sidebar-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 40px;
+    }
+    .sidebar-logo span { color: var(--orange); }
+    
+    .side-links { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+    .side-links a {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 16px;
+      color: rgba(255,255,255,0.6);
       text-decoration: none;
-      transition: color 0.2s;
+      font-size: 0.85rem;
+      border-radius: 12px;
+      transition: all 0.2s;
     }
-    .nav-links a.active { color: var(--orange); font-weight: 500; }
-    .nav-links a:hover { color: #fff; }
+    .side-links a:hover { background: rgba(255,255,255,0.05); color: #fff; }
+    .side-links a.active {
+      background: rgba(232,98,26,0.15);
+      color: var(--orange);
+      font-weight: 500;
+    }
+    .side-links svg { width: 18px; height: 18px; opacity: 0.8; }
+
+    /* Wrapper principal pour décaler le contenu à cause de la sidebar */
+    .main-wrapper {
+      margin-left: 250px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      width: calc(100% - 250px);
+    }
 
     /* Nav right icons */
     .nav-right {
@@ -328,6 +362,8 @@
       .recipe-grid { grid-template-columns: 1fr; }
       nav { flex-wrap: wrap; }
       .search-wrap { max-width: 100%; flex: 1 1 100%; order: 3; }
+      .sidebar { display: none; }
+      .main-wrapper { margin-left: 0; width: 100%; }
     }
 
     /* ── PROFILE DROPDOWN ── */
@@ -622,11 +658,31 @@
 </head>
 <body>
 
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">Bio<span>delice</span></div>
+    <ul class="side-links">
+      <li>
+        <a href="{% url 'recipes:index' %}" class="{% if not is_regime_page %}active{% endif %}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          Recommandé
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'recipes:regime' %}" class="{% if is_regime_page %}active{% endif %}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+          Mon Régime Adapté
+        </a>
+      </li>
+    </ul>
+  </aside>
+
+  <div class="main-wrapper">
   <!-- NAVBAR -->
   <nav>
     <!-- Search with gradient border -->
     <div class="search-wrap">
-      <form id="searchForm" method="GET" action="{% url 'recipes:index' %}" class="search-bar" style="margin: 0;">
+      <form id="searchForm" method="GET" action="{% if is_regime_page %}{% url 'recipes:regime' %}{% else %}{% url 'recipes:index' %}{% endif %}" class="search-bar" style="margin: 0;">
         <input type="hidden" name="tab" value="{{ current_tab }}">
         <button type="submit" style="background: none; border: none; padding: 0; cursor: pointer; display: flex;">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
@@ -636,13 +692,6 @@
         <input type="text" name="q" value="{{ request.GET.q|default_if_none:'' }}" placeholder="Search for a recipe ..."/>
       </form>
     </div>
-
-    <!-- Nav links -->
-  <ul class="nav-links">
-  <li><a href="{% url 'recipes:index' %}" class="active">Home</a></li>
-  <li><a href="{% url 'accounts:signup' %}">Start</a></li>
-  <li><a href="#">About</a></li>
-</ul>
 
     <!-- Icons -->
     <div class="nav-right">
@@ -898,6 +947,7 @@
       </div>
     </div>
   </div>
+  </div> <!-- /main-wrapper -->
 
   <!-- PROFILE MODAL -->
   <div class="modal-overlay" id="modalOverlay">
@@ -980,6 +1030,180 @@
       document.getElementById('detailCloseBtn').addEventListener('click', closeDetail);
       detailOverlay.addEventListener('click', function(e) { if (e.target === detailOverlay) closeDetail(); });
 
+      const substitutionDict = {
+          // 🌾 ALLERGIE AU GLUTEN & MALADIE CŒLIAQUE
+          "gluten": [
+              { match: ["farine de blé", "farine blanche", "blé", "ble", "farine de froment", "farine t55", "farine t45"], replace: "🌽 farine de maïs, de riz ou fécule de pomme de terre", difficulty: "orange" },
+              { match: ["pâtes", "coquillettes", "spaghetti", "macaroni", "nouilles", "tagliatelles", "penne", "farfalle"], replace: "🍝 pâtes de lentilles corail, de sarrasin ou de riz", difficulty: "vert" },
+              { match: ["chapelure", "panure", "panko"], replace: "🥖 polenta, amandes en poudre ou flocons d'avoine certifiés sans gluten", difficulty: "vert" },
+              { match: ["semoule", "couscous", "boulgour"], replace: "🌾 quinoa, semoule de maïs ou de riz", difficulty: "vert" },
+              { match: ["sauce soja", "sauce maggi", "sauce teriyaki"], replace: "🍶 sauce tamari (strictement sans gluten) ou coconut aminos", difficulty: "vert" },
+              { match: ["bière"], replace: "🍺 bière sans gluten ou cidre", difficulty: "vert" },
+              { match: ["seigle", "orge", "épeautre", "petit épeautre", "kamut", "avoine non certifiée"], replace: "🌾 sarrasin, teff, amarante ou millet", difficulty: "orange" },
+              { match: ["seitan", "protéine de blé", "gluten de blé"], replace: "🫘 tofu ferme, tempeh ou protéines de pois", difficulty: "orange" },
+              { match: ["tortillas de blé", "wraps", "pain pita", "naan"], replace: "🌮 tortillas de maïs (100%) ou feuilles de riz", difficulty: "vert" },
+              { match: ["levure chimique", "poudre à lever"], replace: "🥄 bicarbonate de soude avec un trait de citron", difficulty: "vert" }
+          ],
+          // 🥛 INTOLÉRANCE AU LACTOSE / VÉGANISME
+          "lactose": [
+              { match: ["lait de vache", "lait", "lait entier", "lait demi-écrémé", "lait écrémé"], replace: "🥛 lait d'amande, d'avoine ou de soja", difficulty: "vert" },
+              { match: ["beurre", "beurre doux", "beurre salé", "ghee", "beurre clarifié"], replace: "🧈 margarine végétale, huile de coco ou purée d'amande", difficulty: "orange" },
+              { match: ["crème fraîche", "crème liquide", "crème fleurette", "crème épaisse"], replace: "🥥 crème de coco, crème de soja ou de cajou", difficulty: "vert" },
+              { match: ["fromage", "gruyère", "parmesan", "emmental", "cheddar", "mozzarella", "feta", "gouda", "brie", "camembert"], replace: "🧀 fauxmage (à base de cajou, amande) ou levure diététique", difficulty: "orange" },
+              { match: ["yaourt", "yaourt nature", "fromage blanc", "petit-suisse", "skyr", "yaourt grec"], replace: "🥣 yaourt au soja, à l'amande ou à la noix de coco", difficulty: "vert" },
+              { match: ["mascarpone", "ricotta", "philadelphia", "cream cheese", "fromage à tartiner"], replace: "🍮 crème de cajou mixée, tofu soyeux ou cream cheese vegan", difficulty: "orange" },
+              { match: ["lait concentré", "lait concentré sucré"], replace: "🥥 lait de coco concentré sucré", difficulty: "vert" },
+              { match: ["babeurre", "buttermilk", "lait ribot"], replace: "🥛 lait de soja mélangé avec 1 c.à.s de vinaigre de cidre (laisser cailler 10 min)", difficulty: "vert" },
+              { match: ["lait en poudre"], replace: "🥥 poudre de lait de coco ou lait de soja en poudre", difficulty: "vert" },
+              { match: ["petit-lait", "whey", "protéine de lactosérum"], replace: "💪 protéine de pois, de riz ou de chanvre en poudre", difficulty: "vert" }
+          ],
+          // 🩸 DIABÈTE (Réduction de l'indice glycémique)
+          "diabète": [
+              { match: ["sucre vanillé", "vanille sucre", "sucre aromatisé à la vanille", "vanilla sugar"], replace: "🌼 extrait de vanille sans sucre ou érythritol vanillé", difficulty: "vert" },
+              { match: ["sucre glace", "powder sucre", "sucre impalpable", "powdered sugar"], replace: "❄️ érythritol mixé finement au blender", difficulty: "vert" },
+              { match: ["sucre", "sucre blanc", "sucre en poudre", "sucre roux", "cassonade", "sucre de canne", "vergeoise"], replace: "🌿 stévia, érythritol, xylitol ou fruit du moine", difficulty: "vert" },
+              { match: ["miel", "sirop d'érable", "sirop d'agave", "mélasse", "sirop de glucose", "sirop de maïs", "golden syrup"], replace: "🍁 sirop de Yacon (très faible IG) ou sirop de fibres", difficulty: "orange" },
+              { match: ["confiture", "gelée", "marmelade"], replace: "🍓 compote sans sucre ajouté ou purée de fruits maison épaissie aux graines de chia", difficulty: "vert" },
+              { match: ["chocolat au lait", "chocolat blanc", "chocolat en poudre", "pâte à tartiner", "nutella", "nesquik"], replace: "🍫 chocolat noir à 70% minimum ou cacao cru en poudre sans sucre", difficulty: "vert" },
+              { match: ["farine blanche", "farine de blé", "farine de riz blanc", "Maïzena", "fécule de maïs"], replace: "🌾 farine complète, farine de pois chiche, de lupin, d'orge ou d'amande (IG plus bas)", difficulty: "orange" },
+              { match: ["riz blanc", "riz à sushi", "riz basmati blanc", "riz thaï"], replace: "🍚 riz complet, riz sauvage, quinoa ou orge mondé", difficulty: "vert" },
+              { match: ["pomme de terre", "pommes de terre", "purée mousline"], replace: "🍠 patate douce (IG modéré), courge butternut ou chou-fleur (en purée)", difficulty: "orange" },
+              { match: ["dattes", "raisins secs", "fruits confits", "abricots secs"], replace: "🫐 baies fraîches (myrtilles, framboises, fraises) ou oléagineux (noix, amandes)", difficulty: "vert" }
+          ],
+          // 🫀 HYPERTENSION & MALADIES CARDIOVASCULAIRES
+          "hypertension": [
+              { match: ["sel", "sel fin", "gros sel", "fleur de sel", "sel de mer", "sel rose"], replace: "🧂 gomasio (sésame broyé), épices, ail en poudre ou herbes aromatiques", difficulty: "vert" },
+              { match: ["bouillon cube", "cube maggi", "fond de veau", "fond de volaille", "viandox", "bouillon de bœuf"], replace: "🧅 bouillon de légumes maison ou cube sans sel ajouté en magasin bio", difficulty: "vert" },
+              { match: ["sauce soja", "sauce teriyaki", "sauce nuoc-mâm"], replace: "🍶 sauce soja à teneur réduite en sel (bouchon vert) ou coconut aminos", difficulty: "vert" },
+              { match: ["moutarde", "ketchup", "sauce barbecue", "mayonnaise industrielle"], replace: "🍋 jus de citron, vinaigre de cidre, épices ou purée de tomate nature", difficulty: "orange" },
+              { match: ["charcuterie", "lardons", "bacon", "saucisson", "jambon", "chorizo", "pancetta", "guanciale"], replace: "🥓 tofu fumé, tempeh ou paprika fumé (pour le goût)", difficulty: "orange" },
+              { match: ["anchois", "câpres", "olives en saumure", "olives noires", "olives vertes"], replace: "🧄 ail confit, tomates séchées (réhydratées sans sel) ou algues douces", difficulty: "vert" },
+              { match: ["feta", "roquefort", "parmesan", "fromage bleu", "pecorino"], replace: "🧀 fromages frais pauvres en sel (ex: ricotta, mozzarella) ou levure diététique", difficulty: "orange" },
+              { match: ["chips", "biscuits apéritifs", "cacahuètes salées", "pistaches salées"], replace: "🥜 oléagineux nature non salés (amandes, noix) ou pois chiches rôtis aux épices", difficulty: "vert" }
+          ],
+          // 🥚 ALLERGIE AUX ŒUFS
+          "oeuf": [
+              { match: ["œuf", "oeuf", "œufs", "oeufs", "oeuf entier", "œufs entiers", "1 oeuf", "2 oeufs", "3 oeufs"], replace: "🍏 compote de pommes (60g = 1 œuf), demi-banane écrasée ou 'œuf de chia' (1 c.à.s de chia + 3 d'eau)", difficulty: "orange" },
+              { match: ["blanc d'œuf", "blancs d'œufs", "blanc d'oeuf", "blancs d'oeufs"], replace: "💧 aquafaba (jus de boîte de pois chiches monté en neige ferme)", difficulty: "orange" },
+              { match: ["jaune d'œuf", "jaunes d'œufs", "jaune d'oeuf", "jaunes d'oeufs"], replace: "🥑 purée d'avocat, tofu soyeux mixé ou fécule de maïs (pour l'effet liant)", difficulty: "orange" },
+              { match: ["mayonnaise", "mayo"], replace: "🥣 mayonnaise végétale (veganaise) ou yaourt grec/soja fouetté avec de la moutarde", difficulty: "vert" },
+              { match: ["meringue", "meringues"], replace: "☁️ meringue d'aquafaba", difficulty: "orange" }
+          ],
+          // 🥜 ALLERGIE AUX ARACHIDES & FRUITS À COQUE
+          "arachide": [
+              { match: ["cacahuète", "arachide", "cacahuètes", "arachides", "beurre de peanut"], replace: "🌻 graines de tournesol, pois chiches grillés ou edamame", difficulty: "vert" },
+              { match: ["beurre de cacahuète", "beurre d'arachide", "beurre de peanut"], replace: "🍯 purée de sésame (tahin), beurre de graines de tournesol ou purée de soja", difficulty: "vert" },
+              { match: ["huile d'arachide"], replace: "🫒 huile d'olive, d'avocat ou de pépins de raisin", difficulty: "vert" },
+              { match: ["amande", "amandes", "noix", "noisette", "noisettes", "noix de pécan", "noix de cajou", "macadamia", "pistache", "pistaches", "pignons de pin", "pignons", "noix de brésil"], replace: "🎃 graines de courge, graines de chanvre, graines de tournesol ou flocons d'avoine grillés", difficulty: "orange" },
+              { match: ["poudre d'amande", "poudre de noisette", "praliné", "amande en poudre"], replace: "🥥 noix de coco râpée, farine de souchet ou graines de tournesol mixées très finement", difficulty: "orange" },
+              { match: ["pâte d'amande", "massepain", "frangipane"], replace: "🍡 pâte de haricots blancs sucrée (shiroan) ou pâte de graines de tournesol", difficulty: "orange" },
+              { match: ["lait d'amande", "lait de noisette", "lait de macadamia", "lait de cajou"], replace: "🥛 lait d'avoine, lait de soja ou lait de riz", difficulty: "vert" }
+          ],
+          // 🌱 ALLERGIE AU SOJA
+          "soja": [
+              { match: ["soja", "fèves de soja", "edamame", "pousses de soja", "haricot mungo"], replace: "🫘 fèves, petits pois, haricots verts ou pois croquants", difficulty: "vert" },
+              { match: ["sauce soja", "sauce tamari", "shoyu", "sauce maggi"], replace: "🥥 coconut aminos (aminos de coco) ou bouillon de champignons corsé", difficulty: "vert" },
+              { match: ["tofu", "tofu ferme", "tofu soyeux"], replace: "🧀 tofu de pois chiche (burmese tofu), seitan ou ricotta (si le lactose est toléré)", difficulty: "orange" },
+              { match: ["tempeh"], replace: "🍄 gros champignons portobello grillés ou tranches de seitan marinées", difficulty: "orange" },
+              { match: ["lait de soja"], replace: "🥛 lait d'avoine, lait d'amande ou lait de chanvre", difficulty: "vert" },
+              { match: ["crème de soja", "soja cuisine"], replace: "🥥 crème de coco ou crème d'amande (amande cuisine)", difficulty: "vert" },
+              { match: ["protéines de soja texturées", "pst", "protéines de soja"], replace: "🥩 haché végétal à base de pois, lentilles ou viande hachée (si non végétarien)", difficulty: "orange" },
+              { match: ["miso", "pâte de miso"], replace: "🥄 pâte de sésame (tahin) mélangée avec un peu de sel ou bouillon concentré", difficulty: "orange" }
+          ],
+          // 🐟 ALLERGIE AUX POISSONS ET CRUSTACÉS / VÉGANISME MARIN
+          "poisson": [
+              { match: ["poisson", "saumon", "cabillaud", "colin", "truite", "thon", "filet de poisson", "dos de cabillaud", "bar"], replace: "🍆 aubergines marinées, tofu enveloppé d'algue nori ou banane plantain", difficulty: "orange" },
+              { match: ["crevette", "crevettes", "scampi", "gambas", "langoustine"], replace: "🍄 pleurotes sautées (texture très similaire) ou substituts vegan à base de konjac", difficulty: "orange" },
+              { match: ["crabe", "surimi", "chair de crabe", "homard", "tourteau"], replace: "🌴 cœurs de palmier effilochés ou fruit du jacquier (jackfruit)", difficulty: "vert" },
+              { match: ["sauce nuoc-mâm", "sauce poisson", "nuoc mam", "sauce d'huître", "sauce huitre"], replace: "🍶 sauce soja (tamari) infusée aux algues wakamé ou coconut aminos", difficulty: "vert" },
+              { match: ["anchois", "pâte d'anchois", "sardines"], replace: "🫒 pâte d'olives noires (tapenade), câpres hachées ou flocons d'algues dulse", difficulty: "vert" },
+              { match: ["caviar", "œufs de lump", "oeufs de lump", "tarama"], replace: "🫧 perles de tapioca marinées à la sauce soja ou houmous d'algues", difficulty: "vert" },
+              { match: ["calamar", "encornet", "poulpe"], replace: "🍄 anneaux de pleurotes du panicaut (king oyster) poêlés", difficulty: "orange" }
+          ],
+          // 🥩 VÉGÉTARIEN / VÉGANISME (Substitution de viande)
+          "viande": [
+              { match: ["bœuf", "boeuf", "viande hachée", "steak haché", "veau", "mouton", "agneau", "viande de grison", "carpaccio"], replace: "🫘 protéines de soja texturées (PST), haché végétal (ex: Beyond Meat) ou lentilles", difficulty: "orange" },
+              { match: ["poulet", "blanc de poulet", "filet de poulet", "dinde", "volaille", "aiguillettes"], replace: "🍗 seitan, tofu ferme, émincés de soja ou fruit du jacquier (pour l'effiloché)", difficulty: "orange" },
+              { match: ["porc", "lardons", "bacon", "jambon", "jambon blanc", "saucisse", "chorizo", "chair à saucisse", "filet mignon"], replace: "🥓 tofu fumé coupé en dés, tempeh mariné, saucisses végétales ou seitan fumé", difficulty: "orange" },
+              { match: ["bouillon de viande", "bouillon de bœuf", "fond de veau", "jus de viande", "jus de rôti"], replace: "🧅 bouillon de champignons noir corsé, bouillon de légumes riche ou miso dilué", difficulty: "vert" },
+              { match: ["gélatine", "feuille de gélatine", "gélatine de porc"], replace: "🌿 agar-agar (attention au dosage, l'agar-agar est 4 fois plus puissant)", difficulty: "orange" },
+              { match: ["saindoux", "graisse de canard", "graisse d'oie", "suif"], replace: "🥥 huile de coco désodorisée, beurre de cacao ou margarine végétale solide", difficulty: "vert" }
+          ]
+      };
+
+      // ── DICTIONNAIRE DE TRADUCTION ANGLAIS -> FRANÇAIS ──
+      const EN_FR_DICT = {
+        "sugar": "sucre", "salt": "sel", "flour": "farine", "wheat": "blé",
+        "butter": "beurre", "milk": "lait", "water": "eau", "egg": "œuf", "eggs": "œufs",
+        "garlic": "ail", "onion": "oignon", "onions": "oignons", "olive oil": "huile d'olive",
+        "pepper": "poivre", "black pepper": "poivre noir", "chicken": "poulet", "beef": "bœuf",
+        "pork": "porc", "cheese": "fromage", "tomato": "tomate", "tomatoes": "tomates",
+        "potato": "pomme de terre", "potatoes": "pommes de terre", "lemon": "citron",
+        "lemon juice": "jus de citron", "apple": "pomme", "apples": "pommes",
+        "cream": "crème", "vanilla": "vanille", "vanilla extract": "extrait de vanille",
+        "cinnamon": "cannelle", "baking powder": "levure chimique", "baking soda": "bicarbonate de soude",
+        "yeast": "levure", "honey": "miel", "soy sauce": "sauce soja", "pasta": "pâtes",
+        "rice": "riz", "bread": "pain", "broth": "bouillon", "carrot": "carotte",
+        "carrots": "carottes", "oil": "huile", "vinegar": "vinaigre", "mustard": "moutarde",
+        "ginger": "gingembre", "soy": "soja", "almond": "amande", "almonds": "amandes",
+        "peanut": "cacahuète", "peanuts": "cacahuètes", "walnut": "noix", "walnuts": "noix",
+        "chocolate": "chocolat", "cocoa": "cacao", "beef broth": "bouillon de bœuf",
+        "chicken broth": "bouillon de volaille", "vegetable broth": "bouillon de légumes",
+        "heavy cream": "crème liquide", "sour cream": "crème fraîche",
+        "brown sugar": "sucre roux", "powdered sugar": "sucre glace", "maple syrup": "sirop d'érable",
+        "cornstarch": "fécule de maïs", "all purpose flour": "farine de blé",
+        "kosher salt": "gros sel", "sea salt": "sel de mer", "unsalted butter": "beurre doux"
+      };
+
+      function adaptIngredients(ingredientsText, userConstraints) {
+          let finalText = ingredientsText.toLowerCase();
+
+          // Traduction automatique avant l'adaptation
+          const transKeys = Object.keys(EN_FR_DICT).sort((a, b) => b.length - a.length);
+          for (const en of transKeys) {
+              const regex = new RegExp(`\\b${en}\\b`, 'gi');
+              finalText = finalText.replace(regex, EN_FR_DICT[en]);
+          }
+
+          // On parcourt les maladies/allergies de l'utilisateur
+          userConstraints.forEach(constraint => {
+              let key = constraint.toLowerCase();
+              
+              // Cœliaque est souvent associé au mot clé "gluten"
+              if (key.includes("cœliaque") || key.includes("coeliaque")) key = "gluten";
+              // Nettoyage rapide pour les accents
+              if (key.includes("diabete")) key = "diabète";
+              // Alias supplémentaires pour une meilleure couverture
+              if (key.includes("lait") || key.includes("vegan") || key.includes("végétalien")) key = "lactose";
+              if (key.includes("oeuf") || key.includes("œuf")) key = "oeuf";
+              if (key.includes("arachide") || key.includes("coque") || key.includes("cacahuète")) key = "arachide";
+              if (key.includes("poisson") || key.includes("crustacé")) key = "poisson";
+              if (key.includes("viande") || key.includes("végétarien")) key = "viande";
+
+              // Si la contrainte existe dans notre dictionnaire
+              if (substitutionDict[key]) {
+                  let rules = substitutionDict[key];
+                  
+                  // On applique chaque règle de remplacement
+                  rules.forEach(rule => {
+                      // Tri par longueur décroissante (évite que "blé" casse "farine de blé")
+                      let sortedMatches = rule.match.sort((a, b) => b.length - a.length);
+                      let regexPattern = sortedMatches.map(m => m.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+                      
+                      // Expression régulière optimisée pour le français (remplace le \b qui bug sur les accents)
+                      let regex = new RegExp(`(^|[\\\\s,;.\\\'"+-])(${regexPattern})(?=[\\\\s,;.\\\'"+-]|$)`, 'gi');
+                      
+                      finalText = finalText.replace(regex, (match, p1, p2) => {
+                          let color = rule.difficulty === "vert" ? "#4ade80" : "#fbbf24"; 
+                          return `${p1}<del style="opacity:0.5">${p2}</del> <span style="color:${color}; font-weight:600;" title="Adapté pour votre régime">${rule.replace}</span>`;
+                      });
+                  });
+              }
+          });
+
+          return finalText;
+      }
+
       window.openDetail = function(name, img, nutriscore, ingredients, allergens, sugars, salt) {
         document.getElementById('detailImg').src = img;
         document.getElementById('detailTitle').textContent = name;
@@ -995,7 +1219,17 @@
             });
         }
 
-        document.getElementById('detailIngredients').innerHTML = '<div style="grid-column: span 2; font-size: 0.8rem; color: rgba(255,255,255,0.7); line-height: 1.6;">' + (ingredients || "Non spécifiés.") + '</div>';
+        let finalIngredients = ingredients || "Non spécifiés.";
+        let isRegime = {% if is_regime_page %}true{% else %}false{% endif %};
+
+        // ── LOGIQUE DE SUBSTITUTION ──
+        if (isRegime && finalIngredients !== "Non spécifiés.") {
+            let userConstraints = "{{ request.user.health_constraints.all|join:','|lower|escapejs }}";
+            let userConstraintsArr = userConstraints.split(',').map(s => s.trim()).filter(Boolean);
+            finalIngredients = adaptIngredients(finalIngredients, userConstraintsArr);
+        }
+
+        document.getElementById('detailIngredients').innerHTML = '<div style="grid-column: span 2; font-size: 0.8rem; color: rgba(255,255,255,0.8); line-height: 1.6;">' + finalIngredients + '</div>';
         
         document.querySelectorAll('.detail-section-title')[1].style.display = 'none';
         document.getElementById('detailInstructions').style.display = 'none';
