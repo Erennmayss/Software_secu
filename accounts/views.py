@@ -160,3 +160,39 @@ def onboarding_view(request):
             
         return redirect('recipes:index')
     return render(request, 'accounts/onboarding.html')
+
+ # accounts/views.py - Ajoute cette fonction
+
+@login_required
+def save_onboarding(request):
+    if request.method == 'POST':
+        user = request.user
+        
+        # Étape 1
+        user.age = request.POST.get('age')
+        user.weight = request.POST.get('weight')
+        user.height = request.POST.get('height')
+        user.sexe = request.POST.get('sexe')
+        
+        # Étape 2
+        user.restrictions = request.POST.get('restrictions', '')
+        
+        # Étape 3
+        user.aliments_a_eviter = request.POST.get('aliments_a_eviter', '')
+        
+        # Étape 4 - Maladies (liaison avec HealthConstraint)
+        maladies = request.POST.get('maladies', '').split(',')
+        user.health_constraints.clear()
+        for maladie in maladies:
+            if maladie:
+                obj, _ = HealthConstraint.objects.get_or_create(name=maladie)
+                user.health_constraints.add(obj)
+        
+        # Étape 5
+        user.culinary_level = request.POST.get('culinary_level', '')
+        
+        user.save()
+        
+        return JsonResponse({'success': True})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid method'}, status=400)

@@ -1,4 +1,3 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -96,14 +95,6 @@
       overflow: hidden;
     }
 
-    .hero-bg {
-      position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(rgba(0,0,0,0.60), rgba(0,0,0,0.50)),
-        url('{% static "pic.png" %}')
-        center / cover no-repeat;
-    }
 
     .hero-content {
       position: relative;
@@ -405,18 +396,16 @@
   </nav>
 
   <!-- HERO -->
-  <section class="hero">
-    <div class="hero-bg"></div>
-    <div class="hero-content">
-      <h1>
-        Cook it. taste it.
-        <span class="highlight">enjoy it !</span>
-      </h1>
-      <p>Des recettes pour tous : gluten-free ou gourmand, votre aventure culinaire commence ici !</p>
-      <a href="{% url 'accounts:signup' %}" class="hero-btn">Start now</a>
-    </div>
-  </section>
-
+<section class="hero" style="background: linear-gradient(rgba(0,0,0,0.60), rgba(0,0,0,0.50)), url('/static/pic.png') center/cover no-repeat;">
+  <div class="hero-content">
+    <h1>
+      Cook it. taste it.
+      <span class="highlight">enjoy it !</span>
+    </h1>
+    <p>Des recettes pour tous : gluten-free ou gourmand, votre aventure culinaire commence ici !</p>
+    <a href="{% url 'accounts:signup' %}" class="hero-btn">Start now</a>
+  </div>
+</section>
   <!-- WHY BIODELICE — BENTO GRID -->
   <section class="why" id="why">
 

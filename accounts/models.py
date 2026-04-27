@@ -9,22 +9,31 @@ class HealthConstraint(models.Model):
     def __str__(self):
         return self.name
 
+# accounts/models.py - Ajoute ces champs à la classe User
+
 class User(AbstractUser):
     """Utilisateur personnalisé Biodelice."""
     email = models.EmailField(unique=True)
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
-    bio    = models.CharField(max_length=200, blank=True)
+    bio = models.CharField(max_length=200, blank=True)
     health_constraints = models.ManyToManyField(HealthConstraint, blank=True)
+    
+    # Nouveaux champs pour l'onboarding
+    age = models.IntegerField(null=True, blank=True)
+    weight = models.FloatField(null=True, blank=True)  # poids en kg
+    height = models.FloatField(null=True, blank=True)  # taille en cm
+    sexe = models.CharField(max_length=10, choices=[('M', 'Homme'), ('F', 'Femme'), ('autre', 'Autre')], blank=True)
+    
+    restrictions = models.TextField(blank=True)  # restrictions religieuses/allergies
+    aliments_a_eviter = models.TextField(blank=True)  # aliments à éviter
+    culinary_level = models.CharField(max_length=20, choices=[
+        ('debutant', 'Débutant'),
+        ('intermediaire', 'Intermédiaire'),
+        ('avance', 'Avancé')
+    ], blank=True)
 
-    USERNAME_FIELD  = 'email'
+    USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
-
-    def __str__(self):
-        return self.email
-
-    @property
-    def full_name(self):
-        return f"{self.first_name} {self.last_name}".strip() or self.username
 
 
 class PasswordResetCode(models.Model):
