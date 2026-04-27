@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Meal Planner{% endblock %}
+{% block page_sub %}Organisez vos repas et suivez vos calories{% endblock %}
+
+{% block extra_css %}
+<style>
+.planner-container { display: flex; gap: 24px; padding: 32px 56px 56px; height: calc(100vh - 100px); }
+
+/* Barre des recettes favorites (Draggables) */
+.fav-sidebar { width: 280px; background: var(--card); border: 1px solid rgba(255,255,255,0.07); border-radius: 18px; display: flex; flex-direction: column; overflow: hidden; }
+.fav-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.08); font-weight: 600; font-size: 1.1rem; color: #fff; }
+.fav-list { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; scrollbar-width: thin; }
+.drag-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px; display: flex; gap: 12px; cursor: grab; transition: transform 0.2s; }
+.drag-item:active { cursor: grabbing; transform: scale(0.95); }
+.drag-item img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
+.drag-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+.drag-title { font-size: 0.8rem; font-weight: 500; color: #fff; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.drag-cal { font-size: 0.7rem; color: var(--o2); font-weight: 600; margin-top: 4px; }
+
+/* Grille du Calendrier */
+.calendar-main { flex: 1; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; padding-right: 10px; scrollbar-width: thin; }
+.day-card { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; }
+.day-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.day-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: #fff; text-transform: capitalize; }
+.cal-progress-wrap { display: flex; align-items: center; gap: 12px; }
+.cal-text { font-size: 0.8rem; color: var(--muted); }
+.cal-text strong { color: #fff; }
+.cal-bar { width: 120px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
+.cal-fill { height: 100%; background: var(--o1); transition: width 0.3s; }
+
+.meal-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.meal-slot { border: 1.5px dashed rgba(255,255,255,0.15); border-radius: 12px; min-height: 110px; padding: 12px; display: flex; flex-direction: column; transition: background 0.2s, border-color 0.2s; position: relative; }
+.meal-slot.drag-over { background: rgba(232,98,26,0.1); border-color: var(--o1); border-style: solid; }
+.slot-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.4); margin-bottom: 8px; text-align: center; }
+
+.planned-recipe { background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px; display: flex; align-items: center; gap: 10px; position: relative; }
+.planned-recipe img { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; }
+.planned-info { flex: 1; }
+.planned-name { font-size: 0.75rem; color: #fff; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+.planned-cal { font-size: 0.65rem; color: var(--o3); }
+.remove-btn { background: rgba(224,92,92,0.15); color: #e05c5c; border: none; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+.remove-btn:hover { background: rgba(224,92,92,0.8); color: #fff; }
+
+.user-stats-banner { background: linear-gradient(135deg, rgba(74,158,255,0.15), rgba(155,111,255,0.15)); border: 1px solid rgba(74,158,255,0.3); border-radius: 12px; padding: 16px 24px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="planner-container">
+  
+  <!-- Sidebar des favoris à glisser -->
+  <div class="fav-sidebar">
+    <div class="fav-header">Vos Favoris</div>
+    <div class="fav-list">
+      {% for fav in favorites %}
+      <div class="drag-item" draggable="true" data-id="{{ fav.id }}" data-name="{{ fav.name }}" data-cal="{{ fav.calories }}" data-img="{{ fav.image_url }}">
+        <img src="{{ fav.image_url }}" alt="img">
+        <div class="drag-info">
+          <div class="drag-title">{{ fav.name }}</div>
+          <div class="drag-cal">🔥 {{ fav.calories }} kcal</div>
+        </div>
+      </div>
+      {% empty %}
+      <div style="font-size:0.8rem; color:var(--muted); text-align:center; margin-top:20px;">Ajoutez des recettes aux favoris pour les planifier ici !</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Calendrier Principal -->
+  <div class="calendar-main">
+    {% if not has_profile_data %}
+    <div class="user-stats-banner" style="background: rgba(244,196,48,0.15); border-color: rgba(244,196,48,0.3);">
+      <div>
+        <div style="font-weight:600; color:#f4c430; margin-bottom:4px;">Objectif calorique imprécis</div>
+        <div style="font-size:0.8rem; color:rgba(255,255,255,0.7);">Remplissez votre âge, poids et taille dans votre profil pour un calcul sur mesure !</div>
+      </div>
+      <button onclick="document.getElementById('editProfileBtn').click()" style="padding:8px 16px; background:#f4c430; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Compléter mon profil</button>
+    </div>
+    {% else %}
+    <div class="user-stats-banner">
+      <div>
+        <div style="font-weight:600; color:#fff; margin-bottom:4px;">Votre besoin énergétique journalier</div>
+        <div style="font-size:0.8rem; color:rgba(255,255,255,0.7);">Calculé sur base de votre profil (Mifflin-St Jeor)</div>
+      </div>
+      <div style="font-size:1.6rem; font-family:'Playfair Display'; font-weight:600; color:#4a9eff;">{{ daily_calories }} kcal</div>
+    </div>
+    {% endif %}
+
+    {% for day in days %}
+    <div class="day-card" data-day="{{ day }}">
+      <div class="day-header">
+        <div class="day-title">{{ day }}</div>
+        <div class="cal-progress-wrap">
+          <div class="cal-text"><strong class="day-cal-count">0</strong> / {{ daily_calories }} kcal</div>
+          <div class="cal-bar"><div class="cal-fill" style="width: 0%;"></div></div>
+        </div>
+      </div>
+      <div class="meal-slots">
+        {% for meal in meals %}
+        <div class="meal-slot" data-meal="{{ meal }}" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event)">
+          <div class="slot-title">{% if meal == 'petit_dej' %}Petit-Déjeuner{% elif meal == 'dejeuner' %}Déjeuner{% else %}Dîner{% endif %}</div>
+          <div class="slot-content"></div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const dailyGoal = {{ daily_calories }};
+const existingPlan = {{ plan_dict|safe }};
+const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+// Chargement initial
+document.querySelectorAll('.day-card').forEach(card => {
+  const day = card.dataset.day;
+  let totalCal = 0;
+
+  if(existingPlan[day]) {
+    for(const [meal, recipe] of Object.entries(existingPlan[day])) {
+      const slot = card.querySelector(`.meal-slot[data-meal="${meal}"] .slot-content`);
+      if(slot) {
+        slot.innerHTML = renderRecipeHTML(recipe.id, recipe.name, recipe.calories, recipe.image, day, meal);
+        totalCal += recipe.calories;
+      }
+    }
+  }
+  updateProgress(card, totalCal);
+});
+
+// Événements Drag & Drop
+let draggedItem = null;
+
+document.querySelectorAll('.drag-item').forEach(item => {
+  item.addEventListener('dragstart', (e) => {
+    draggedItem = {
+      id: item.dataset.id, name: item.dataset.name,
+      cal: parseInt(item.dataset.cal), img: item.dataset.img
+    };
+  });
+});
+
+function allowDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.add('drag-over');
+}
+
+function dragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+
+async function drop(e) {
+  e.preventDefault();
+  const slot = e.currentTarget;
+  slot.classList.remove('drag-over');
+  if (!draggedItem) return;
+
+  const day = slot.closest('.day-card').dataset.day;
+  const meal = slot.dataset.meal;
+  const contentDiv = slot.querySelector('.slot-content');
+
+  // Retirer l'ancien total s'il y a déjà une recette
+  const oldRecipe = contentDiv.querySelector('.planned-recipe');
+  let oldCal = 0;
+  if(oldRecipe) oldCal = parseInt(oldRecipe.dataset.cal);
+
+  // Mettre à jour l'UI
+  contentDiv.innerHTML = renderRecipeHTML(draggedItem.id, draggedItem.name, draggedItem.cal, draggedItem.img, day, meal);
+  
+  // Recalculer
+  const card = slot.closest('.day-card');
+  let currentTotal = parseInt(card.querySelector('.day-cal-count').innerText);
+  updateProgress(card, currentTotal - oldCal + draggedItem.cal);
+
+  // Requête serveur
+  await fetch('/recipes/planner/update/', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrf},
+    body: JSON.stringify({action: 'add', day: day, meal_type: meal, recipe_id: draggedItem.id})
+  });
+}
+
+window.removeRecipe = async function(btn, day, meal, cal) {
+  const slot = btn.closest('.meal-slot');
+  slot.querySelector('.slot-content').innerHTML = '';
+  
+  const card = slot.closest('.day-card');
+  let currentTotal = parseInt(card.querySelector('.day-cal-count').innerText);
+  updateProgress(card, currentTotal - cal);
+
+  await fetch('/recipes/planner/update/', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrf},
+    body: JSON.stringify({action: 'remove', day: day, meal_type: meal})
+  });
+};
+
+function renderRecipeHTML(id, name, cal, img, day, meal) {
+  return `
+    <div class="planned-recipe" data-cal="${cal}">
+      <img src="${img}" alt="img">
+      <div class="planned-info">
+        <div class="planned-name" title="${name}">${name}</div>
+        <div class="planned-cal">🔥 ${cal} kcal</div>
+      </div>
+      <button class="remove-btn" onclick="removeRecipe(this, '${day}', '${meal}', ${cal})">✕</button>
+    </div>`;
+}
+
+function updateProgress(card, totalCal) {
+  card.querySelector('.day-cal-count').innerText = totalCal;
+  const pct = Math.min(100, (totalCal / dailyGoal) * 100);
+  const fill = card.querySelector('.cal-fill');
+  fill.style.width = `${pct}%`;
+  fill.style.background = totalCal > dailyGoal ? '#e05c5c' : 'var(--o1)';
+}
+</script>
+{% endblock %}

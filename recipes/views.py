@@ -1,7 +1,9 @@
+import json
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from accounts.models import FoodProduct
+from .models import MealPlan
 
 @login_required
 def index(request):
@@ -122,3 +124,57 @@ def toggle_favorite(request, product_id):
             return JsonResponse({'status': 'added'})
             
     return JsonResponse({'error': 'Requête invalide'}, status=400)
+
+
+@login_required
+def planner(request):
+    user = request.user
+    
+    # ── Calcul des besoins caloriques (Formule de Mifflin-St Jeor) ──
+    # Hommes : (10 × poids en kg) + (6,25 × taille en cm) - (5 × âge en années) + 5
+    # Femmes : (10 × poids en kg) + (6,25 × taille en cm) - (5 × âge en années) - 161
+    daily_calories = 2000 # Valeur par défaut
+    has_profile_data = False
+    
+    if user.weight and user.height and user.age and user.sexe:
+        has_profile_data = True
+        bmr = (10 * user.weight) + (6.25 * user.height) - (5 * user.age)
+        if user.sexe == 'M':
+            bmr += 5
+        else:
+            bmr -= 161
+        # Facteur d'activité modérée (x 1.375)
+        daily_calories = int(bmr * 1.375)
+
+    # ── Récupération des favoris pour le drag & drop ──
+    favorites = user.favorite_products.all()
+
+    # ── Récupération du planning actuel ──
+    plans = MealPlan.objects.filter(user=user).select_related('recipe')
+    plan_dict = {}
+    for p in plans:
+        if p.day not in plan_dict:
+            plan_dict[p.day] = {}
+        plan_dict[p.day][p.meal_type] = {
+            'id': p.recipe.id, 'name': p.recipe.name,
+            'calories': p.recipe.calories, 'image': p.recipe.image_url
+        }
+
+    days_of_week = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']
+    meal_types = ['petit_dej', 'dejeuner', 'diner']
+
+    return render(request, 'planner.html', {
+        'daily_calories': daily_calories, 'has_profile_data': has_profile_data,
+        'favorites': favorites, 'plan_dict': json.dumps(plan_dict),
+        'days': days_of_week, 'meals': meal_types
+    })
+
+@login_required
+def update_planner(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        if data.get('action') == 'add':
+            MealPlan.objects.update_or_create(user=request.user, day=data['day'], meal_type=data['meal_type'], defaults={'recipe_id': data['recipe_id']})
+        elif data.get('action') == 'remove':
+            MealPlan.objects.filter(user=request.user, day=data['day'], meal_type=data['meal_type']).delete()
+        return JsonResponse({'success': True})
