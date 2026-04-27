@@ -36,6 +36,30 @@
       --sidebar-width:250px;
     }
 
+    body.light-mode{
+      --bg:#f6efe7;
+      --bg-soft:#fbf7f2;
+      --panel:#ffffffd1;
+      --panel-2:#fffaf5;
+      --panel-3:#fff;
+      --border:rgba(234,223,206,0.95);
+      --border-strong:rgba(219,201,179,0.95);
+      --glass:rgba(255,255,255,0.82);
+      --glass-2:rgba(255,255,255,0.92);
+      --text:#22313d;
+      --muted:#6b7782;
+      --muted-2:#8d98a1;
+      --accent:#e8621a;
+      --accent-soft:rgba(232,98,26,0.12);
+      --accent-glow:rgba(232,98,26,0.16);
+      --success:#1f9d63;
+      --danger:#dc4d41;
+      --warning:#f2b632;
+      --shadow-lg:0 28px 70px rgba(34,49,61,0.2);
+      --shadow-md:0 22px 40px rgba(49,34,18,0.12);
+      --shadow-sm:0 12px 24px rgba(34,49,61,0.08);
+    }
+
     *{box-sizing:border-box}
     html{scroll-behavior:smooth}
     body{
@@ -50,6 +74,13 @@
       overflow-x:hidden;
     }
 
+    body.light-mode{
+      background:
+        radial-gradient(circle at top right, rgba(232,98,26,0.08), transparent 22%),
+        radial-gradient(circle at left 20%, rgba(242,182,50,0.08), transparent 28%),
+        linear-gradient(180deg, #fbf7f2 0%, #f6efe7 100%);
+    }
+
     body::before{
       content:"";
       position:fixed;
@@ -61,6 +92,12 @@
       mask-image:linear-gradient(180deg, rgba(0,0,0,0.55), transparent 95%);
       pointer-events:none;
       z-index:-1;
+    }
+
+    body.light-mode::before{
+      background:
+        linear-gradient(rgba(34,49,61,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(34,49,61,0.03) 1px, transparent 1px);
     }
 
     a{color:inherit;text-decoration:none}
@@ -87,6 +124,10 @@
       flex-direction:column;
       gap:20px;
       z-index:50;
+    }
+
+    body.light-mode .sidebar{
+      background:rgba(255,250,245,0.92);
     }
 
     .sidebar-logo{
@@ -126,12 +167,16 @@
       transition:transform .22s ease, background .22s ease, border-color .22s ease, color .22s ease, box-shadow .22s ease;
     }
 
+    body.light-mode .sidebar-link{color:#53616d}
+
     .sidebar-link:hover{
       transform:translateX(4px);
       background:rgba(255,255,255,0.05);
       border-color:var(--border);
       color:#fff;
     }
+
+    body.light-mode .sidebar-link:hover{color:#22313d;background:#fff}
 
     .sidebar-link.active{
       background:linear-gradient(135deg, rgba(232,98,26,0.18), rgba(255,255,255,0.04));
@@ -150,6 +195,10 @@
       border:1px solid rgba(255,255,255,0.08);
       font-size:0.95rem;
       flex-shrink:0;
+    }
+
+    body.light-mode .sidebar-icon{
+      background:rgba(255,255,255,0.92);
     }
 
     .sidebar-link.active .sidebar-icon{
@@ -197,6 +246,10 @@
       box-shadow:var(--shadow-sm);
     }
 
+    body.light-mode .topbar{
+      background:rgba(255,255,255,0.82);
+    }
+
     .topbar-search{
       display:flex;
       align-items:center;
@@ -209,9 +262,14 @@
       border:1px solid rgba(255,255,255,0.07);
     }
 
+    body.light-mode .topbar-search{
+      background:#fff;
+      border-color:var(--border);
+    }
+
     .topbar-search input{
       width:100%;
-      color:#fff;
+      color:var(--text);
       background:transparent;
       border:none;
       outline:none;
@@ -236,6 +294,12 @@
       border-radius:14px;
       background:rgba(255,255,255,0.05);
       border:1px solid var(--border);
+    }
+
+    body.light-mode .icon-btn,
+    body.light-mode .profile-btn{
+      color:var(--text);
+      background:#fff;
     }
 
     .icon-btn:hover,
@@ -284,6 +348,10 @@
       transition:opacity .2s ease, transform .2s ease, visibility .2s ease;
     }
 
+    body.light-mode .profile-menu{
+      background:rgba(255,255,255,0.96);
+    }
+
     .profile-wrap.open .profile-menu{
       opacity:1;
       visibility:visible;
@@ -296,6 +364,8 @@
       border-radius:12px;
       color:rgba(255,255,255,0.8);
     }
+
+    body.light-mode .profile-menu a{color:#53616d}
 
     .profile-menu a:hover{background:rgba(255,255,255,0.05);color:#fff}
 
@@ -344,6 +414,12 @@
       transition:transform .2s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease;
     }
 
+    body.light-mode .btn{
+      background:#fff;
+      color:var(--text);
+      border-color:var(--border);
+    }
+
     .btn:hover{
       transform:translateY(-2px);
       background:rgba(255,255,255,0.08);
@@ -355,6 +431,8 @@
       border-color:rgba(232,98,26,0.4);
       box-shadow:0 12px 30px rgba(232,98,26,0.18);
     }
+
+    body.light-mode .btn-primary{color:#fff}
 
     .btn-primary:hover{
       background:linear-gradient(135deg, #f36a20, #ff8a4a);
@@ -377,6 +455,11 @@
       background:linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.03));
       backdrop-filter:blur(16px);
       box-shadow:var(--shadow-sm);
+    }
+
+    body.light-mode .card{
+      background:rgba(255,255,255,0.82);
+      border-color:rgba(234,223,206,0.95);
     }
 
     .card::after{
@@ -415,6 +498,12 @@
       color:#fff;
       background:rgba(255,255,255,0.05);
       border:1px solid rgba(255,255,255,0.08);
+    }
+
+    body.light-mode .chip{
+      background:#fff;
+      border-color:var(--border);
+      color:#53616d;
     }
 
     .chip.accent{background:rgba(232,98,26,0.14);border-color:rgba(232,98,26,0.2);color:#ffba92}
@@ -565,6 +654,8 @@
       padding:0 18px 18px;
     }
 
+    body.light-mode th{color:#6b7782}
+
     table{
       width:100%;
       min-width:760px;
@@ -652,6 +743,14 @@
       color:#fff;
       outline:none;
       transition:border-color .2s ease, background .2s ease, box-shadow .2s ease;
+    }
+
+    body.light-mode .control,
+    body.light-mode .textarea,
+    body.light-mode .select{
+      background:#fff;
+      color:var(--text);
+      border-color:var(--border);
     }
 
     .control,
@@ -959,6 +1058,10 @@
       box-shadow:var(--shadow-lg);
     }
 
+    body.light-mode .modal-card{
+      background:#fff;
+    }
+
     .modal-header{
       display:flex;
       align-items:flex-start;
@@ -998,6 +1101,10 @@
       justify-content:space-between;
       gap:12px;
       box-shadow:var(--shadow-md);
+    }
+
+    body.light-mode .sticky-bar{
+      background:rgba(255,255,255,0.88);
     }
 
     .sticky-bar p{margin:0;color:var(--muted);font-size:0.84rem}
@@ -1052,6 +1159,7 @@
         </label>
 
         <div class="topbar-actions">
+          <button class="icon-btn" type="button" id="themeToggle" aria-label="Toggle theme">☼</button>
           <button class="icon-btn" type="button" aria-label="Notifications">⎋</button>
           <button class="icon-btn" type="button" aria-label="Quick view">✦</button>
 
@@ -1090,6 +1198,25 @@
     (function () {
       const wrap = document.getElementById('profileWrap');
       const toggle = document.getElementById('profileToggle');
+      const themeToggle = document.getElementById('themeToggle');
+      const storageKey = 'biodelice-admin-theme';
+
+      if (themeToggle) {
+        const applyTheme = function (theme) {
+          document.body.classList.toggle('light-mode', theme === 'light');
+          themeToggle.textContent = theme === 'light' ? '☾' : '☼';
+        };
+
+        const savedTheme = localStorage.getItem(storageKey) || 'dark';
+        applyTheme(savedTheme);
+
+        themeToggle.addEventListener('click', function () {
+          const nextTheme = document.body.classList.contains('light-mode') ? 'dark' : 'light';
+          localStorage.setItem(storageKey, nextTheme);
+          applyTheme(nextTheme);
+        });
+      }
+
       if (wrap && toggle) {
         toggle.addEventListener('click', function () {
           const isOpen = wrap.classList.toggle('open');
