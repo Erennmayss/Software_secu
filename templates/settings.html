@@ -1,0 +1,608 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Paramètres{% endblock %}
+{% block page_sub %}Modifiez vos informations de santé et préférences{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── PAGE CONTENT ── */
+main {
+  padding: 36px 48px 80px;
+  max-width: 860px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.page-header { margin-bottom: 40px; }
+.page-header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 6px;
+}
+.page-header p { color: rgba(255,255,255,0.45); font-size: 0.85rem; }
+
+/* ── SECTION CARD ── */
+.section-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  animation: fadeUp 0.5s cubic-bezier(0.22,1,0.36,1) both;
+}
+.section-card:nth-child(2) { animation-delay: 0.05s; }
+.section-card:nth-child(3) { animation-delay: 0.10s; }
+.section-card:nth-child(4) { animation-delay: 0.15s; }
+.section-card:nth-child(5) { animation-delay: 0.20s; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.section-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 24px;
+  padding-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.section-icon {
+  width: 38px; height: 38px; background: rgba(232,98,26,0.15); border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+}
+.section-title { font-size: 0.95rem; font-weight: 600; color: #fff; }
+.section-subtitle { font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 2px; }
+
+/* ── FORM ELEMENTS ── */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+.form-row.single { grid-template-columns: 1fr; }
+.form-row.triple { grid-template-columns: 1fr 1fr 1fr; }
+
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+.form-group label {
+  font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.6);
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+
+.field-input {
+  width: 100%; padding: 13px 18px; background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.1); border-radius: 12px;
+  font-family: 'Poppins', sans-serif; font-size: 0.88rem; color: #fff;
+  outline: none; transition: all 0.2s;
+}
+.field-input::placeholder { color: rgba(255,255,255,0.25); }
+.field-input:focus {
+  border-color: var(--o1); background: rgba(255,255,255,0.09);
+  box-shadow: 0 0 0 3px rgba(232,98,26,0.12);
+}
+.field-input-unit { position: relative; }
+.field-input-unit input { padding-right: 48px; }
+.unit-label {
+  position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+  font-size: 0.78rem; color: rgba(255,255,255,0.35); pointer-events: none;
+}
+
+/* Custom select */
+.custom-select { position: relative; }
+.custom-select-trigger {
+  width: 100%; padding: 13px 18px; background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.1); border-radius: 12px;
+  font-family: 'Poppins', sans-serif; font-size: 0.88rem; color: #fff;
+  cursor: pointer; display: flex; justify-content: space-between;
+  align-items: center; transition: all 0.2s;
+}
+.custom-select-trigger:hover { border-color: rgba(255,255,255,0.2); }
+.custom-select-trigger.open { border-color: var(--o1); }
+.caret { transition: transform 0.2s; }
+.caret.rotated { transform: rotate(180deg); }
+.custom-select-options {
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+  background: #1e3d2a; border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px; overflow: hidden; z-index: 20; display: none;
+}
+.custom-select-options.show { display: block; animation: fadeDown 0.15s ease; }
+@keyframes fadeDown { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+.custom-option {
+  padding: 13px 18px; font-size: 0.88rem; color: rgba(255,255,255,0.75);
+  cursor: pointer; transition: background 0.15s;
+}
+.custom-option:hover { background: rgba(255,255,255,0.07); color: #fff; }
+.custom-option.selected { background: rgba(232,98,26,0.2); color: var(--o1); }
+
+/* ── OPTION CHIPS ── */
+.chips-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip {
+  padding: 9px 16px; background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: 50px; font-size: 0.8rem; color: rgba(255,255,255,0.65);
+  cursor: pointer; transition: all 0.2s; user-select: none;
+}
+.chip:hover { border-color: rgba(255,255,255,0.25); color: #fff; }
+.chip.selected { border-color: var(--o1); background: rgba(232,98,26,0.15); color: #fff; font-weight: 500; }
+
+/* ── LEVEL CARDS ── */
+.level-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.level-card {
+  padding: 18px 14px; background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.08);
+  border-radius: 14px; cursor: pointer; text-align: center; transition: all 0.2s;
+}
+.level-card:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.07); }
+.level-card.selected { border-color: var(--o1); background: rgba(232,98,26,0.12); }
+.level-card .level-emoji { font-size: 1.6rem; margin-bottom: 8px; }
+.level-card .level-name { font-size: 0.85rem; font-weight: 600; color: #fff; margin-bottom: 4px; }
+.level-card .level-desc { font-size: 0.72rem; color: rgba(255,255,255,0.4); }
+.level-card.selected .level-name { color: var(--o1); }
+.level-card.selected .level-desc { color: rgba(232,98,26,0.7); }
+
+/* ── TAGS INPUT ── */
+.tags-wrap {
+  background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: 12px; padding: 12px 14px; min-height: 80px; display: flex;
+  flex-wrap: wrap; gap: 8px; align-content: flex-start; transition: border-color 0.2s; cursor: text;
+}
+.tags-wrap:focus-within { border-color: var(--o1); }
+.tag {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--green-mid);
+  border: 1px solid rgba(255,255,255,0.15); border-radius: 50px; font-size: 0.78rem; color: rgba(255,255,255,0.9);
+}
+.tag-remove { cursor: pointer; opacity: 0.6; font-size: 1rem; line-height: 1; transition: opacity 0.15s; }
+.tag-remove:hover { opacity: 1; }
+.tag-field { flex: 1; min-width: 120px; background: transparent; border: none; outline: none; font-family: 'Poppins', sans-serif; font-size: 0.82rem; color: #fff; }
+.tag-field::placeholder { color: rgba(255,255,255,0.25); }
+.tags-hint { font-size: 0.72rem; color: rgba(255,255,255,0.3); margin-top: 8px; }
+
+/* ── SAVE BAR ── */
+.save-bar {
+  position: fixed; bottom: 0; left: 250px; right: 0; padding: 18px 48px;
+  background: rgba(22,43,30,0.95); backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255,255,255,0.07); display: flex; align-items: center;
+  justify-content: space-between; z-index: 200; transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
+}
+.save-bar.visible { transform: translateY(0); }
+.save-bar-text { font-size: 0.82rem; color: rgba(255,255,255,0.45); }
+.save-bar-text span { color: var(--o1); font-weight: 500; }
+.btn-save-settings {
+  padding: 12px 32px; background: var(--o1); color: white; border: none;
+  border-radius: 50px; font-family: 'Poppins', sans-serif; font-size: 0.85rem;
+  font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 14px rgba(232,98,26,0.35);
+}
+.btn-save-settings:hover { background: var(--o2); transform: translateY(-1px); }
+
+@media (max-width: 768px) {
+  .save-bar { left: 0; padding: 16px 24px; }
+  main { padding: 24px 20px 100px; }
+  .form-row { grid-template-columns: 1fr; }
+  .form-row.triple { grid-template-columns: 1fr 1fr; }
+  .level-grid { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<main>
+  <div class="page-header">
+    <h1>Mes paramètres</h1>
+    <p>Modifie tes informations pour affiner tes recettes et recommandations</p>
+  </div>
+
+  <!-- SECTION 1 : Profil -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon">👤</div>
+      <div>
+        <div class="section-title">Profil personnel</div>
+        <div class="section-subtitle">Utilisé pour calculer tes besoins nutritionnels</div>
+      </div>
+    </div>
+
+    <div class="form-row triple">
+      <div class="form-group">
+        <label>Âge</label>
+        <div class="field-input-unit" style="position:relative;">
+          <input class="field-input" type="number" id="age" value="{{ request.user.age|default_if_none:'' }}" placeholder="25" min="1" max="120" style="padding-right:48px;">
+          <span class="unit-label">ans</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Poids</label>
+        <div style="position:relative;">
+          <input class="field-input" type="number" id="weight" value="{{ request.user.weight|default_if_none:'' }}" placeholder="70" step="0.1" style="padding-right:42px;">
+          <span class="unit-label">kg</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Taille</label>
+        <div style="position:relative;">
+          <input class="field-input" type="number" id="height" value="{{ request.user.height|default_if_none:'' }}" placeholder="165" step="0.1" style="padding-right:42px;">
+          <span class="unit-label">cm</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row single">
+      <div class="form-group">
+        <label>Sexe</label>
+        <div class="custom-select" id="sexeSelect">
+          <div class="custom-select-trigger" id="sexeTrigger">
+            <span id="sexeLabel">Sélectionner</span>
+            <svg class="caret" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="custom-select-options" id="sexeOptions">
+            <div class="custom-option" data-value="M">👨 Homme</div>
+            <div class="custom-option" data-value="F">👩 Femme</div>
+          </div>
+        </div>
+        <input type="hidden" id="sexe" value="">
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2 : Restrictions alimentaires -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon">🥗</div>
+      <div>
+        <div class="section-title">Restrictions alimentaires</div>
+        <div class="section-subtitle">Allergies, intolérances ou choix religieux</div>
+      </div>
+    </div>
+
+    <div class="chips-grid" id="restrictionsGrid">
+      <div class="chip" data-value="aucune">✅ Aucune restriction</div>
+      <div class="chip" data-value="sans_lactose">🥛 Sans lactose</div>
+      <div class="chip" data-value="sans_gluten">🌾 Sans gluten</div>
+      <div class="chip" data-value="sans_noix">🥜 Sans noix</div>
+      <div class="chip" data-value="sans_alcool">🍷 Sans alcool</div>
+      <div class="chip" data-value="hallal">🕌 Hallal</div>
+      <div class="chip" data-value="vegan">🌱 Vegan</div>
+      <div class="chip" data-value="vegetarien">🥬 Végétarien</div>
+    </div>
+    <input type="hidden" id="restrictions" value="">
+  </div>
+
+  <!-- SECTION 3 : Aliments à éviter -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon">🚫</div>
+      <div>
+        <div class="section-title">Aliments à éviter</div>
+        <div class="section-subtitle">Ces aliments seront exclus de tes recettes</div>
+      </div>
+    </div>
+
+    <div class="tags-wrap" id="tagsWrap">
+      <div id="tagsContainer" style="display:contents;"></div>
+      <input class="tag-field" id="alimentInput" placeholder="Ajouter un aliment... (Entrée pour valider)" autocomplete="off">
+    </div>
+    <p class="tags-hint">💡 Appuie sur Entrée pour ajouter. Clique sur un tag pour le retirer.</p>
+    <input type="hidden" id="alimentsAEviter" value="">
+
+    <div class="chips-grid" style="margin-top: 18px;" id="foodPresets">
+      <div class="chip" data-food="chou frisé">🥬 Chou frisé</div>
+      <div class="chip" data-food="boeuf">🥩 Boeuf</div>
+      <div class="chip" data-food="oeuf">🥚 Oeuf</div>
+      <div class="chip" data-food="gingembre">🫚 Gingembre</div>
+      <div class="chip" data-food="porc">🐷 Porc</div>
+      <div class="chip" data-food="crevette">🦐 Crevette</div>
+      <div class="chip" data-food="champignon">🍄 Champignon</div>
+      <div class="chip" data-food="fromage">🧀 Fromage</div>
+    </div>
+  </div>
+
+  <!-- SECTION 4 : Santé -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon">🏥</div>
+      <div>
+        <div class="section-title">Santé & régimes</div>
+        <div class="section-subtitle">Pour adapter les recettes à tes besoins spécifiques</div>
+      </div>
+    </div>
+
+    <div class="chips-grid" id="maladiesGrid">
+      <div class="chip" data-disease="diabete">🩸 Diabète</div>
+      <div class="chip" data-disease="hypertension">❤️ Hypertension</div>
+      <div class="chip" data-disease="celiaque">🌾 Cœliaque</div>
+      <div class="chip" data-disease="keto">🥑 Keto</div>
+      <div class="chip" data-disease="reflux">🔥 Reflux gastrique</div>
+    </div>
+    <input type="hidden" id="maladies" value="">
+  </div>
+
+  <!-- SECTION 5 : Niveau culinaire -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon">🔪</div>
+      <div>
+        <div class="section-title">Niveau culinaire</div>
+        <div class="section-subtitle">On adapte la complexité des recettes à ton niveau</div>
+      </div>
+    </div>
+
+    <div class="level-grid" id="levelGrid">
+      <div class="level-card" data-level="debutant">
+        <div class="level-emoji">👶</div>
+        <div class="level-name">Débutant</div>
+        <div class="level-desc">Je découvre la cuisine</div>
+      </div>
+      <div class="level-card" data-level="intermediaire">
+        <div class="level-emoji">🍳</div>
+        <div class="level-name">Intermédiaire</div>
+        <div class="level-desc">Je cuisine régulièrement</div>
+      </div>
+      <div class="level-card" data-level="avance">
+        <div class="level-emoji">👨‍🍳</div>
+        <div class="level-name">Avancé</div>
+        <div class="level-desc">Je maîtrise les techniques</div>
+      </div>
+    </div>
+    <input type="hidden" id="culinaryLevel" value="">
+  </div>
+</main>
+
+<!-- SAVE BAR -->
+<div class="save-bar" id="saveBar">
+  <span class="save-bar-text">Tu as des <span>modifications non sauvegardées</span></span>
+  <button class="btn-save-settings" id="saveBtn">Sauvegarder</button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // ── STATE ──
+  let isDirty = false;
+  let isInitializing = true; // Empêche l'apparition de la barre de sauvegarde au chargement
+  let selectedSexe = '';
+  let selectedRestrictions = new Set();
+  let alimentsSet = new Set();
+  let selectedDiseases = new Set();
+  let selectedLevel = '';
+
+  function markDirty() {
+    if (isInitializing) return;
+    isDirty = true;
+    document.getElementById('saveBar').classList.add('visible');
+  }
+
+  // ── CUSTOM SELECT : SEXE ──
+  const sexeTrigger = document.getElementById('sexeTrigger');
+  const sexeOptions = document.getElementById('sexeOptions');
+  const sexeLabel  = document.getElementById('sexeLabel');
+  const sexeInput  = document.getElementById('sexe');
+
+  sexeTrigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = sexeOptions.classList.contains('show');
+    sexeOptions.classList.toggle('show', !isOpen);
+    sexeTrigger.classList.toggle('open', !isOpen);
+    sexeTrigger.querySelector('.caret').classList.toggle('rotated', !isOpen);
+  });
+
+  document.querySelectorAll('#sexeOptions .custom-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      selectedSexe = opt.dataset.value;
+      sexeLabel.textContent = opt.textContent;
+      sexeInput.value = selectedSexe;
+      document.querySelectorAll('#sexeOptions .custom-option').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      sexeOptions.classList.remove('show');
+      sexeTrigger.classList.remove('open');
+      sexeTrigger.querySelector('.caret').classList.remove('rotated');
+      markDirty();
+    });
+  });
+
+  document.addEventListener('click', () => {
+    sexeOptions.classList.remove('show');
+    sexeTrigger.classList.remove('open');
+    sexeTrigger.querySelector('.caret').classList.remove('rotated');
+  });
+
+  // ── RESTRICTIONS ──
+  document.querySelectorAll('#restrictionsGrid .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const val = chip.dataset.value;
+      if (val === 'aucune') {
+        selectedRestrictions.clear();
+        document.querySelectorAll('#restrictionsGrid .chip').forEach(c => c.classList.remove('selected'));
+        chip.classList.add('selected');
+      } else {
+        const aucune = document.querySelector('#restrictionsGrid .chip[data-value="aucune"]');
+        aucune.classList.remove('selected');
+        if (selectedRestrictions.has(val)) {
+          selectedRestrictions.delete(val);
+          chip.classList.remove('selected');
+        } else {
+          selectedRestrictions.add(val);
+          chip.classList.add('selected');
+        }
+      }
+      document.getElementById('restrictions').value = [...selectedRestrictions].join(',');
+      markDirty();
+    });
+  });
+
+  // ── TAGS : ALIMENTS À ÉVITER ──
+  const tagsContainer = document.getElementById('tagsContainer');
+  const alimentInput  = document.getElementById('alimentInput');
+  const tagsWrap      = document.getElementById('tagsWrap');
+
+  tagsWrap.addEventListener('click', () => alimentInput.focus());
+
+  function renderTags() {
+    tagsWrap.querySelectorAll('.tag').forEach(t => t.remove());
+
+    alimentsSet.forEach(food => {
+      const tag = document.createElement('span');
+      tag.className = 'tag';
+      tag.innerHTML = `${food} <span class="tag-remove" data-food="${food}">×</span>`;
+      tagsWrap.insertBefore(tag, alimentInput);
+    });
+
+    tagsWrap.querySelectorAll('.tag-remove').forEach(btn => {
+      btn.addEventListener('click', () => {
+        alimentsSet.delete(btn.dataset.food);
+        renderTags();
+        document.getElementById('alimentsAEviter').value = [...alimentsSet].join(',');
+        updateFoodPresets();
+        markDirty();
+      });
+    });
+
+    document.getElementById('alimentsAEviter').value = [...alimentsSet].join(',');
+    updateFoodPresets();
+  }
+
+  function addFood(food) {
+    if (food && !alimentsSet.has(food)) {
+      alimentsSet.add(food);
+      renderTags();
+      markDirty();
+    }
+  }
+
+  alimentInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const val = alimentInput.value.trim().toLowerCase();
+      if (val) { addFood(val); alimentInput.value = ''; }
+    }
+  });
+
+  function updateFoodPresets() {
+    document.querySelectorAll('#foodPresets .chip').forEach(chip => {
+      chip.classList.toggle('selected', alimentsSet.has(chip.dataset.food));
+    });
+  }
+
+  document.querySelectorAll('#foodPresets .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const food = chip.dataset.food;
+      if (alimentsSet.has(food)) {
+        alimentsSet.delete(food);
+      } else {
+        alimentsSet.add(food);
+      }
+      renderTags();
+      markDirty();
+    });
+  });
+
+  // ── MALADIES ──
+  document.querySelectorAll('#maladiesGrid .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const val = chip.dataset.disease;
+      if (selectedDiseases.has(val)) {
+        selectedDiseases.delete(val);
+        chip.classList.remove('selected');
+      } else {
+        selectedDiseases.add(val);
+        chip.classList.add('selected');
+      }
+      document.getElementById('maladies').value = [...selectedDiseases].join(',');
+      markDirty();
+    });
+  });
+
+  // ── NIVEAU CULINAIRE ──
+  document.querySelectorAll('#levelGrid .level-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('#levelGrid .level-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      selectedLevel = card.dataset.level;
+      document.getElementById('culinaryLevel').value = selectedLevel;
+      markDirty();
+    });
+  });
+
+  // ── INPUTS : mark dirty on change ──
+  ['age','weight','height'].forEach(id => {
+    document.getElementById(id).addEventListener('input', markDirty);
+  });
+
+  // ── SAVE ──
+  document.getElementById('saveBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('saveBtn');
+    btn.textContent = 'Sauvegarde...';
+    btn.disabled = true;
+
+    const formData = new FormData();
+    formData.append('age', document.getElementById('age').value);
+    formData.append('weight', document.getElementById('weight').value);
+    formData.append('height', document.getElementById('height').value);
+    formData.append('sexe', document.getElementById('sexe').value);
+    formData.append('restrictions', document.getElementById('restrictions').value);
+    formData.append('aliments_a_eviter', document.getElementById('alimentsAEviter').value);
+    formData.append('maladies', document.getElementById('maladies').value);
+    formData.append('culinary_level', document.getElementById('culinaryLevel').value);
+
+    const csrfEl = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrfEl) formData.append('csrfmiddlewaretoken', csrfEl.value);
+
+    try {
+      const response = await fetch("{% url 'accounts:save_settings' %}", { method: 'POST', body: formData });
+      const data = await response.json();
+      if (data.success) {
+        isDirty = false;
+        document.getElementById('saveBar').classList.remove('visible');
+        if(typeof showToast === 'function') showToast('✅ Paramètres sauvegardés avec succès');
+      } else {
+        if(typeof showToast === 'function') showToast('❌ Erreur : ' + (data.error || 'Réessaye'));
+      }
+    } catch {
+      if(typeof showToast === 'function') showToast('❌ Une erreur est survenue');
+    }
+
+    btn.textContent = 'Sauvegarder';
+    btn.disabled = false;
+  });
+
+  // ── LOAD EXISTING DATA (Auto-click Django values) ──
+  function loadInitialData() {
+    const sexeVal = "{{ request.user.sexe|default:'' }}";
+    if (sexeVal) {
+      const opt = document.querySelector(`#sexeOptions .custom-option[data-value="${sexeVal}"]`);
+      if (opt) opt.click();
+    }
+
+    const restVal = "{{ request.user.restrictions|default:'' }}";
+    if (restVal) {
+      restVal.split(',').forEach(r => {
+        if (!r.trim()) return;
+        const chip = document.querySelector(`#restrictionsGrid .chip[data-value="${r.trim()}"]`);
+        if (chip) chip.click();
+      });
+    }
+
+    const alimentsVal = "{{ request.user.aliments_a_eviter|default:'' }}";
+    if (alimentsVal) {
+      alimentsVal.split(',').forEach(a => {
+        if(a.trim()) addFood(a.trim());
+      });
+    }
+
+    const maladiesVal = "{% for c in request.user.health_constraints.all %}{{ c.name|lower|escapejs }},{% endfor %}";
+    if (maladiesVal) {
+      maladiesVal.split(',').forEach(m => {
+        if (!m.trim()) return;
+        const chip = document.querySelector(`#maladiesGrid .chip[data-disease="${m.trim()}"]`);
+        if (chip) chip.click();
+      });
+    }
+
+    const lvlVal = "{{ request.user.culinary_level|default:'' }}";
+    if (lvlVal) {
+      const card = document.querySelector(`#levelGrid .level-card[data-level="${lvlVal}"]`);
+      if (card) card.click();
+    }
+
+    // Fin de l'initialisation, on cache la barre de sauvegarde !
+    setTimeout(() => {
+      isInitializing = false;
+      document.getElementById('saveBar').classList.remove('visible');
+    }, 50);
+  }
+
+  loadInitialData();
+</script>
+{% endblock %}

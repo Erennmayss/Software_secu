@@ -161,6 +161,10 @@ def onboarding_view(request):
         return redirect('recipes:index')
     return render(request, 'accounts/onboarding.html')
 
+@login_required
+def settings_view(request):
+    return render(request, 'settings.html')
+
  # accounts/views.py - Ajoute cette fonction
 
 @login_required
