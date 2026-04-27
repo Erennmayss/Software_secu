@@ -1230,7 +1230,7 @@
 
         // ── LOGIQUE DE SUBSTITUTION ──
         if (isRegime && finalIngredients !== "Non spécifiés.") {
-            let userConstraints = "{{ request.user.health_constraints.all|join:','|lower|escapejs }}";
+            let userConstraints = "{% for c in request.user.health_constraints.all %}{{ c.name|lower|escapejs }},{% endfor %}";
             let userConstraintsArr = userConstraints.split(',').map(s => s.trim()).filter(Boolean);
             finalIngredients = adaptIngredients(finalIngredients, userConstraintsArr);
         }
