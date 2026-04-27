@@ -1,0 +1,117 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Users | Biodelice Admin{% endblock %}
+{% block admin_section %}users{% endblock %}
+
+{% block admin_content %}
+  <section class="page-header">
+    <div>
+      <h1 class="page-title">Users</h1>
+      <p class="page-subtitle">Monitor registrations, inspect linked health constraints and promote or demote staff members from the Biodelice backoffice.</p>
+    </div>
+    <div class="page-actions">
+      <span class="chip success">{{ active_percentage }}% active accounts</span>
+    </div>
+  </section>
+
+  <section class="grid grid-2">
+    <article class="card">
+      <form method="get" class="filters">
+        <input class="control filter-grow" type="text" name="q" value="{{ search_query }}" placeholder="Search by email" />
+        <select class="select filter-sm" name="role">
+          <option value="">Role</option>
+          <option value="member" {% if role_filter == 'member' %}selected{% endif %}>Member</option>
+          <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>Admin</option>
+        </select>
+        <select class="select filter-sm" name="activity">
+          <option value="">Activity</option>
+          <option value="active" {% if activity_filter == 'active' %}selected{% endif %}>Active</option>
+          <option value="inactive" {% if activity_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+        </select>
+        <button class="btn btn-soft" type="submit">Filter</button>
+      </form>
+    </article>
+
+    <article class="card">
+      <div class="card-content">
+        <div class="stats-strip">
+          <div class="mini-stat">
+            <span class="muted tiny">Total users</span>
+            <strong>{{ total_users }}</strong>
+          </div>
+          <div class="mini-stat">
+            <span class="muted tiny">Active rate</span>
+            <strong>{{ active_percentage }}%</strong>
+          </div>
+          <div class="mini-stat">
+            <span class="muted tiny">Common condition</span>
+            <strong>{{ most_common_constraint }}</strong>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="card" style="margin-top:18px;">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Avatar</th>
+            <th>Email</th>
+            <th>Registration date</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Health constraints</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user_obj in users %}
+            <tr>
+              <td>
+                <div class="avatar">
+                  {{ user_obj.email|slice:":1"|upper }}{{ user_obj.first_name|slice:":1"|upper }}
+                </div>
+              </td>
+              <td>{{ user_obj.email }}</td>
+              <td>{{ user_obj.date_joined|date:"Y-m-d" }}</td>
+              <td>
+                <span class="badge {% if user_obj.is_staff %}badge-admin{% else %}badge-user{% endif %}">
+                  {% if user_obj.is_staff %}Admin{% else %}Member{% endif %}
+                </span>
+              </td>
+              <td>
+                <span class="badge {% if user_obj.is_active %}badge-active{% else %}badge-inactive{% endif %}">
+                  {% if user_obj.is_active %}Active{% else %}Inactive{% endif %}
+                </span>
+              </td>
+              <td>
+                <div class="chips-wrap">
+                  {% for constraint in user_obj.health_constraints.all %}
+                    <span class="chip" style="background:{{ constraint.color }}22;border-color:{{ constraint.color }}55;">{{ constraint.name }}</span>
+                  {% empty %}
+                    <span class="muted tiny">None</span>
+                  {% endfor %}
+                </div>
+              </td>
+              <td>
+                <div class="actions-row">
+                  <form method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="toggle_staff_user_id" value="{{ user_obj.pk }}" />
+                    <button class="action-link" type="submit">{% if user_obj.is_staff %}Retrograder{% else %}Promouvoir{% endif %}</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="7" class="muted">No user found for the current filters.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

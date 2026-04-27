@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     # Applications personnalisées
     'accounts',
     'recipes',
+    'backoffice',
 ]
 
 MIDDLEWARE = [
