@@ -66,6 +66,26 @@
     cursor: pointer;
   }
 
+  .settings-card {
+    background: var(--surface);
+    border-color: var(--line);
+    backdrop-filter: blur(16px);
+  }
+
+  .settings-card h2 {
+    color: var(--text);
+  }
+
+  label {
+    color: var(--muted);
+  }
+
+  input, select, textarea {
+    background: var(--surface-2);
+    color: var(--text);
+    border-color: var(--line);
+  }
+
   @media (max-width: 760px) {
     .settings-grid { grid-template-columns: 1fr; }
   }

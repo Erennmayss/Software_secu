@@ -259,6 +259,37 @@
     color: #22313d;
   }
 
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    backdrop-filter: blur(16px);
+  }
+
+  .hero-main h2,
+  .modal-title,
+  .card-body h3,
+  .detail-card strong {
+    color: var(--text);
+  }
+
+  .tab,
+  .filters input,
+  .filters select,
+  .ghost-btn,
+  .fav-btn {
+    background: var(--surface-2);
+    border-color: var(--line);
+    color: var(--text);
+  }
+
+  .tab { color: var(--muted); }
+  .fav-btn { color: var(--muted-2); }
+  .detail-overlay { background: rgba(4, 12, 8, 0.55); }
+  .detail-modal {
+    background: rgba(20, 39, 27, 0.96);
+    border: 1px solid var(--line);
+  }
+
   @media (max-width: 980px) {
     .hero-strip,
     .filters,

@@ -730,6 +730,41 @@
 
   .planner-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+  .recipe-panel,
+  .stats-panel,
+  .cal-summary-bar,
+  .grid-col-header,
+  .grid-row-header,
+  .meal-cell,
+  .weekly-ring-wrap,
+  .macro-card,
+  .drag-card,
+  .panel-search,
+  .ing-chip,
+  .ing-input,
+  .week-nav-btn,
+  .view-toggle,
+  .cell-recipe {
+    background: var(--surface);
+    border-color: var(--line);
+    color: var(--text);
+  }
+
+  .calendar-area,
+  .main {
+    background: transparent;
+  }
+
+  .day-cal-progress {
+    background: rgba(255,255,255,0.08);
+  }
+
+  .cell-remove {
+    background: var(--surface-2);
+    border-color: var(--line);
+    color: var(--text);
+  }
+
   /* Responsive */
   @media (max-width: 900px) {
     .stats-panel { display: none; }
