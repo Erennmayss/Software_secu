@@ -1,1405 +1,410 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Biodelice — Recettes</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+{% extends "base.html" %}
 
-    :root {
-      --green:      #1e3d2a;
-      --green-mid:  #2d5a3d;
-      --green-light:#3a7050;
-      --orange:     #e8621a;
-      --cream:      #fdf6ee;
-      --text:       #1c1c1c;
-      --muted:      #999;
-      --card-bg:    #fff;
-      --border:     rgba(255,255,255,0.10);
-    }
+{% block page_title %}Recommandé{% endblock %}
+{% block header_title %}Recommandé{% endblock %}
+{% block page_sub %}Retrouve l’ancienne logique de recommandation avec une présentation plus claire.{% endblock %}
 
-    html, body {
-      min-height: 100vh;
-      font-family: 'Poppins', sans-serif;
-      background: var(--green);
-      color: #fff;
-      display: flex; /* Préparation pour la sidebar */
-    }
+{% block extra_css %}
+<style>
+  .panel {
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid rgba(234, 223, 206, 0.95);
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+  }
 
-    /* ── NAVBAR ── */
-    nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 36px;
-      background: var(--green);
-      gap: 24px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      background: rgba(30, 61, 42, 0.85);
-      backdrop-filter: blur(10px);
-    }
+  .hero-strip {
+    display: grid;
+    grid-template-columns: 1.2fr repeat(3, minmax(0, 180px));
+    gap: 16px;
+    margin-bottom: 22px;
+  }
 
-    /* Search bar with gradient border */
-    .search-wrap {
-      position: relative;
-      flex: 1;
-      max-width: 340px;
-    }
-    .search-wrap::before {
-      content: '';
-      position: absolute;
-      inset: -1.5px;
-      border-radius: 10px;
-      background: linear-gradient(
-        120deg,
-        rgba(255,255,255,0.35) 0%,
-        rgba(255,255,255,0.08) 40%,
-        rgba(232,98,26,0.45) 100%
-      );
-      z-index: 0;
-      pointer-events: none;
-    }
-    .search-bar {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(255,255,255,0.07);
-      border-radius: 9px;
-      padding: 10px 16px;
-      backdrop-filter: blur(8px);
-    }
-    .search-bar input {
-      flex: 1;
-      background: transparent;
-      border: none;
-      outline: none;
-      font-family: 'Poppins', sans-serif;
-      font-size: 0.8rem;
-      font-weight: 300;
-      color: rgba(255,255,255,0.85);
-    }
-    .search-bar input::placeholder { color: rgba(255,255,255,0.45); }
-    .search-bar svg { color: rgba(255,255,255,0.4); flex-shrink: 0; }
+  .hero-main,
+  .hero-stat {
+    padding: 24px;
+  }
 
-    /* ── SIDEBAR ── */
-    .sidebar {
-      position: fixed;
-      top: 0; left: 0;
-      width: 250px;
-      height: 100vh;
-      background: #162b1e;
-      border-right: 1px solid rgba(255,255,255,0.06);
-      padding: 28px 24px;
-      z-index: 150;
-    }
-    .sidebar-logo {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.6rem;
-      font-weight: 600;
-      color: #fff;
-      margin-bottom: 40px;
-    }
-    .sidebar-logo span { color: var(--orange); }
-    
-    .side-links { list-style: none; display: flex; flex-direction: column; gap: 12px; }
-    .side-links a {
-      display: flex; align-items: center; gap: 14px;
-      padding: 14px 16px;
-      color: rgba(255,255,255,0.6);
-      text-decoration: none;
-      font-size: 0.85rem;
-      border-radius: 12px;
-      transition: all 0.2s;
-    }
-    .side-links a:hover { background: rgba(255,255,255,0.05); color: #fff; }
-    .side-links a.active {
-      background: rgba(232,98,26,0.15);
-      color: var(--orange);
-      font-weight: 500;
-    }
-    .side-links svg { width: 18px; height: 18px; opacity: 0.8; }
+  .hero-main h2,
+  .modal-title {
+    margin: 0 0 8px;
+    font-family: 'Playfair Display', serif;
+    color: #22313d;
+  }
 
-    /* Wrapper principal pour décaler le contenu à cause de la sidebar */
-    .main-wrapper {
-      margin-left: 250px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      width: calc(100% - 250px);
-    }
+  .hero-main p,
+  .subtle,
+  .meta-row,
+  .detail-copy {
+    color: var(--muted);
+  }
 
-    /* Nav right icons */
-    .nav-right {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-    .nav-icon {
-      width: 36px; height: 36px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.09);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      transition: background 0.2s;
-      border: 1px solid rgba(255,255,255,0.12);
-    }
-    .nav-icon:hover { background: rgba(255,255,255,0.15); }
-    .nav-icon img {
-      width: 100%; height: 100%;
-      border-radius: 50%;
-      object-fit: cover;
-    }
+  .hero-stat strong {
+    display: block;
+    font-size: 1.8rem;
+    color: var(--accent);
+  }
 
-    /* ── MAIN CONTENT ── */
-    main { padding: 28px 36px 60px; }
+  .toolbar {
+    padding: 20px;
+    margin-bottom: 18px;
+  }
 
-    /* Tabs */
-    .tabs {
-      display: flex;
-      gap: 0;
-      margin-bottom: 22px;
-    }
-    .tab {
-      padding: 10px 28px 12px;
-      font-size: 1rem;
-      font-weight: 500;
-      color: rgba(255,255,255,0.45);
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: color 0.2s, border-color 0.2s;
-      user-select: none;
-      letter-spacing: 0.01em;
-    }
-    .tab.active {
-      color: #fff;
-      border-bottom: 2.5px solid var(--orange);
-    }
-    .tab:hover:not(.active) { color: rgba(255,255,255,0.75); }
+  .tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
 
-    /* Filters row */
-    .filters-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 24px;
-      flex-wrap: wrap;
-    }
-    .filter-label {
-      font-size: 0.78rem;
-      font-weight: 400;
-      color: rgba(255,255,255,0.55);
-      margin-right: 4px;
-    }
-    .filter-pill {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 16px;
-      border-radius: 8px;
-      border: 2px solid #B34500;
-      background: rgba(255,255,255,0.06);
-      font-size: 0.75rem;
-      font-weight: 400;
-      color: rgba(255,255,255,0.8);
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-      user-select: none;
-    }
-    .filter-pill:hover {
-      border-color: var(--orange);
-      background: rgba(255,255,255,0.1);
-    }
-    .filter-pill.active {
-      border-color: var(--orange);
-      background: rgba(232, 98, 26, 0.15);
-      color: #fff;
-    }
-    .filter-pill svg { opacity: 0.6; }
+  .tab {
+    padding: 10px 16px;
+    border-radius: 999px;
+    text-decoration: none;
+    border: 1px solid var(--line);
+    color: #53616d;
+    background: #fff;
+    font-weight: 500;
+  }
 
-    /* Count dropdown */
-    .count-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 24px;
-    }
-    .count-btn {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: transparent;
-      border: none;
-      color: #fff;
-      font-family: 'Poppins', sans-serif;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      padding: 0;
-    }
-    .count-btn svg { opacity: 0.7; }
+  .tab.active {
+    background: var(--accent-soft);
+    border-color: rgba(232, 98, 26, 0.24);
+    color: var(--accent);
+  }
 
-    /* ── RECIPE GRID ── */
-    .recipe-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-    }
+  .filters {
+    display: grid;
+    grid-template-columns: 1.2fr repeat(3, minmax(0, 170px)) auto;
+    gap: 12px;
+  }
 
-    .recipe-card {
-      background: var(--card-bg);
-      border-radius: 12px;
-      display: flex;
-      align-items: stretch;
-      overflow: hidden;
-      cursor: pointer;
-      transition: transform 0.28s cubic-bezier(0.22,1,0.36,1), box-shadow 0.28s;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.18);
-    }
-    .recipe-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.28);
-    }
+  .filters input,
+  .filters select {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--text);
+    font: inherit;
+  }
 
-    /* Bouton favori sur les cartes */
-    .btn-fav {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(4px);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      z-index: 10;
-      transition: all 0.2s;
-    }
-    .btn-fav svg {
-      width: 14px; height: 14px;
-      fill: none; stroke: #fff; stroke-width: 2;
-      transition: fill 0.2s, stroke 0.2s;
-    }
-    .btn-fav.active svg { fill: #e8621a; stroke: #e8621a; }
-    .btn-fav:hover { background: rgba(0, 0, 0, 0.6); transform: scale(1.1); }
-    .recipe-card { position: relative; }
+  .filters button,
+  .ghost-btn {
+    padding: 12px 16px;
+    border-radius: 14px;
+    border: 0;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+  }
 
-    .recipe-img {
-      width: 110px;
-      min-height: 120px;
-      flex-shrink: 0;
-      object-fit: cover;
-      display: block;
-    }
+  .ghost-btn {
+    background: #fff;
+    color: var(--text);
+    border: 1px solid var(--line);
+  }
 
-    .recipe-info {
-      padding: 14px 16px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 6px;
-      flex: 1;
-    }
+  .results-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 18px 0 16px;
+  }
 
-    .recipe-title {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--text);
-      line-height: 1.2;
-    }
+  .recipe-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 18px;
+  }
 
-    .recipe-desc {
-      font-size: 0.7rem;
-      font-weight: 300;
-      color: #777;
-      line-height: 1.55;
-      flex: 1;
-    }
+  .recipe-card {
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
 
-    .recipe-meta {
-      font-size: 0.65rem;
-      color: #aaa;
-      font-weight: 300;
-    }
+  .recipe-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 22px 40px rgba(49, 34, 18, 0.12);
+  }
 
-    /* Stars */
-    .stars {
-      display: flex;
-      gap: 2px;
-      margin-top: 6px;
-    }
-    .star {
-      color: #f4a800;
-      font-size: 0.85rem;
-    }
-    .star.empty { color: #ddd; }
+  .card-media {
+    position: relative;
+    height: 180px;
+  }
 
-    /* Animate in */
-    .recipe-card {
-      animation: fadeUp 0.5s cubic-bezier(0.22,1,0.36,1) both;
-    }
-    .recipe-card:nth-child(1) { animation-delay: 0.05s; }
-    .recipe-card:nth-child(2) { animation-delay: 0.10s; }
-    .recipe-card:nth-child(3) { animation-delay: 0.15s; }
-    .recipe-card:nth-child(4) { animation-delay: 0.20s; }
-    .recipe-card:nth-child(5) { animation-delay: 0.25s; }
-    .recipe-card:nth-child(6) { animation-delay: 0.30s; }
+  .card-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 
-    @keyframes fadeUp {
-      from { opacity:0; transform:translateY(18px); }
-      to   { opacity:1; transform:translateY(0); }
-    }
+  .badge-row {
+    position: absolute;
+    inset: 14px 14px auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
 
-    @media (max-width: 700px) {
-      .recipe-grid { grid-template-columns: 1fr; }
-      nav { flex-wrap: wrap; }
-      .search-wrap { max-width: 100%; flex: 1 1 100%; order: 3; }
-      .sidebar { display: none; }
-      .main-wrapper { margin-left: 0; width: 100%; }
-    }
+  .nutri,
+  .fav-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-    /* ── PROFILE DROPDOWN ── */
-    .profile-wrap {
-      position: relative;
-    }
-    .nav-icon.avatar-btn {
-      cursor: pointer;
-      border: 2px solid transparent;
-      transition: border-color 0.2s;
-    }
-    .nav-icon.avatar-btn.open {
-      border-color: var(--orange);
-    }
+  .nutri {
+    width: 34px;
+    height: 34px;
+    border-radius: 12px;
+    color: #fff;
+    font-weight: 700;
+  }
 
-    .dropdown {
-      position: absolute;
-      top: calc(100% + 10px);
-      right: 0;
-      width: 190px;
-      background: #1a3526;
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 12px;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
-      overflow: hidden;
-      opacity: 0;
-      transform: translateY(-8px) scale(0.97);
-      pointer-events: none;
-      transition: opacity 0.2s, transform 0.2s;
-      z-index: 200;
-    }
-    .dropdown.show {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-      pointer-events: all;
-    }
+  .nutri.a { background: #1f9d63; }
+  .nutri.b { background: #73b944; }
+  .nutri.c { background: #f2b632; color: #263238; }
+  .nutri.d { background: #f28f3b; }
+  .nutri.e { background: #dc4d41; }
+  .nutri.n { background: #90a4ae; }
 
-    /* Dropdown user info */
-    .dropdown-header {
-      padding: 16px 18px 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-    .dropdown-header .d-name {
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: #fff;
-    }
-    .dropdown-header .d-email {
-      font-size: 0.68rem;
-      color: rgba(255,255,255,0.45);
-      margin-top: 2px;
-    }
+  .fav-btn {
+    width: 38px;
+    height: 38px;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    color: #8d98a1;
+    box-shadow: 0 8px 16px rgba(34, 49, 61, 0.1);
+    cursor: pointer;
+  }
 
-    /* Dropdown items */
-    .dropdown-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 13px 18px;
-      font-size: 0.8rem;
-      font-weight: 400;
-      color: rgba(255,255,255,0.8);
-      cursor: pointer;
-      transition: background 0.18s, color 0.18s;
-    }
-    .dropdown-item:hover { background: rgba(255,255,255,0.07); color: #fff; }
-    .dropdown-item.logout { color: #e05c5c; }
-    .dropdown-item.logout:hover { background: rgba(224,92,92,0.1); }
-    .dropdown-item svg { flex-shrink: 0; opacity: 0.7; }
-    .dropdown-item.logout svg { opacity: 1; }
+  .fav-btn.active { color: #dc4d41; }
 
-    /* ── PROFILE MODAL ── */
-    /* Amélioration de l'overlay pour le centrage */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7); /* Plus sombre pour mieux voir la modale */
-  backdrop-filter: blur(4px);
-  z-index: 300;
-  display: flex;
-  align-items: center; /* Centre verticalement */
-  justify-content: center; /* Centre horizontalement */
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s;
-  padding: 20px; /* Sécurité pour ne pas toucher les bords de l'écran */
-}
+  .card-body {
+    padding: 18px;
+  }
 
-/* Correction de la boîte modale */
-.modal {
-  background: #1a3526;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 18px;
-  width: 100%;
-  max-width: 500px; /* Largeur maximale raisonnable */
-  max-height: 90vh; /* Ne dépasse jamais 90% de la hauteur de l'écran */
-  overflow-y: auto; /* Permet le défilement INTERNE si le contenu est trop long */
-  padding: 30px;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
-  transform: translateY(20px);
-  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-  
-  /* Cacher la barre de défilement pour un look plus propre (optionnel) */
-  scrollbar-width: thin;
-  scrollbar-color: var(--orange) transparent;
-}
-    .modal-overlay.show {
-      opacity: 1;
-      pointer-events: all;
-    }
+  .card-body h3 {
+    margin: 0 0 8px;
+    color: #22313d;
+    font-size: 1rem;
+  }
 
-    
-    .modal-overlay.show .modal {
-      transform: translateY(0);
-    }
+  .meta-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 0.8rem;
+  }
 
-    .modal-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 28px;
-    }
-    .modal-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.4rem;
-      font-weight: 600;
-      color: #fff;
-    }
-    .modal-close {
-      width: 32px; height: 32px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.08);
-      border: none;
-      color: rgba(255,255,255,0.7);
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.1rem;
-      transition: background 0.2s;
-    }
-    .modal-close:hover { background: rgba(255,255,255,0.15); color: #fff; }
+  .detail-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(34, 49, 61, 0.42);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 40;
+  }
 
-    /* Avatar in modal */
-    .modal-avatar {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 28px;
-      padding-bottom: 24px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-    .modal-avatar img {
-      width: 60px; height: 60px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid var(--orange);
-    }
-    .modal-avatar-info .label {
-      font-size: 0.72rem;
-      color: rgba(255,255,255,0.45);
-      margin-bottom: 4px;
-    }
-    .modal-avatar-info .change-photo {
-      font-size: 0.76rem;
-      color: var(--orange);
-      cursor: pointer;
-      font-weight: 500;
-    }
-    .modal-avatar-info .change-photo:hover { text-decoration: underline; }
+  .detail-overlay.open { display: flex; }
 
-    /* Section heading */
-    .modal-section {
-      font-size: 0.65rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.35);
-      margin-bottom: 14px;
-      margin-top: 24px;
-    }
-    .modal-section:first-of-type { margin-top: 0; }
+  .detail-modal {
+    width: min(760px, 100%);
+    background: #fff;
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: 0 28px 70px rgba(34, 49, 61, 0.2);
+  }
 
-    /* Modal form */
-    .modal-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      margin-bottom: 14px;
-    }
-    .modal-field { display: flex; flex-direction: column; gap: 6px; }
-    .modal-field.full { grid-column: span 2; }
+  .detail-cover {
+    height: 240px;
+    position: relative;
+  }
 
-    .modal-field label {
-      font-size: 0.7rem;
-      font-weight: 500;
-      color: rgba(255,255,255,0.55);
-      letter-spacing: 0.04em;
-    }
-    .modal-field input {
-      padding: 11px 14px;
-      background: rgba(255,255,255,0.07);
-      border: 1.5px solid rgba(255,255,255,0.12);
-      border-radius: 8px;
-      font-family: 'Poppins', sans-serif;
-      font-size: 0.82rem;
-      color: #fff;
-      outline: none;
-      transition: border-color 0.2s, background 0.2s;
-    }
-    .modal-field input::placeholder { color: rgba(255,255,255,0.25); }
-    .modal-field input:focus {
-      border-color: var(--orange);
-      background: rgba(255,255,255,0.1);
-    }
-    .modal-field input.error { border-color: #e05c5c; }
+  .detail-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 
-    .field-hint {
-      font-size: 0.65rem;
-      color: rgba(255,255,255,0.3);
-      margin-top: 2px;
+  .detail-body {
+    padding: 24px;
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .detail-card {
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--surface-2);
+  }
+
+  .detail-card strong {
+    display: block;
+    margin-bottom: 10px;
+    color: #22313d;
+  }
+
+  @media (max-width: 980px) {
+    .hero-strip,
+    .filters,
+    .detail-grid {
+      grid-template-columns: 1fr;
     }
-    .field-error {
-      font-size: 0.65rem;
-      color: #e05c5c;
-      margin-top: 2px;
-      display: none;
-    }
-    .field-error.show { display: block; }
+  }
+</style>
+{% endblock %}
 
-    /* Divider */
-    .modal-divider {
-      height: 1px;
-      background: rgba(255,255,255,0.08);
-      margin: 22px 0;
-    }
+{% block content %}
+<section class="hero-strip">
+  <div class="panel hero-main">
+    <h2>Recettes recommandées</h2>
+    <p>On garde la logique d’origine: filtres serveur par santé, calories, difficulté et favoris, avec une présentation plus légère.</p>
+  </div>
+  <div class="panel hero-stat"><span class="subtle">Total recettes</span><strong>{{ total_recipes }}</strong></div>
+  <div class="panel hero-stat"><span class="subtle">Salé</span><strong>{{ total_sale }}</strong></div>
+  <div class="panel hero-stat"><span class="subtle">Sucré</span><strong>{{ total_sucre }}</strong></div>
+</section>
 
-    /* Save button */
-    .modal-actions {
-      display: flex;
-      gap: 12px;
-      margin-top: 28px;
-    }
-    .btn-save {
-      flex: 1;
-      padding: 13px;
-      background: var(--orange);
-      color: #fff;
-      border: none;
-      border-radius: 9px;
-      font-family: 'Poppins', sans-serif;
-      font-size: 0.84rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.12s;
-      box-shadow: 0 4px 16px rgba(232,98,26,0.32);
-    }
-    .btn-save:hover { background: #cf5414; }
-    .btn-save:active { transform: scale(0.98); }
+<section class="panel toolbar">
+  <div class="tabs">
+    <a class="tab {% if current_tab == 'sale' %}active{% endif %}" href="?tab=sale&q={{ query|urlencode }}&difficulty={{ selected_difficulty|urlencode }}&calories_max={{ calories_max|urlencode }}{% if request.GET.favs == '1' %}&favs=1{% endif %}">Salé</a>
+    <a class="tab {% if current_tab == 'sucre' %}active{% endif %}" href="?tab=sucre&q={{ query|urlencode }}&difficulty={{ selected_difficulty|urlencode }}&calories_max={{ calories_max|urlencode }}{% if request.GET.favs == '1' %}&favs=1{% endif %}">Sucré</a>
+  </div>
 
-    .btn-cancel {
-      padding: 13px 22px;
-      background: rgba(255,255,255,0.07);
-      color: rgba(255,255,255,0.7);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 9px;
-      font-family: 'Poppins', sans-serif;
-      font-size: 0.84rem;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .btn-cancel:hover { background: rgba(255,255,255,0.12); color: #fff; }
+  <form class="filters" method="get">
+    <input type="hidden" name="tab" value="{{ current_tab }}">
+    <input type="text" name="q" value="{{ query }}" placeholder="Rechercher une recette...">
+    <select name="difficulty">
+      <option value="">Toutes difficultés</option>
+      <option value="facile" {% if selected_difficulty == 'facile' %}selected{% endif %}>Facile</option>
+      <option value="moyen" {% if selected_difficulty == 'moyen' %}selected{% endif %}>Moyen</option>
+      <option value="difficile" {% if selected_difficulty == 'difficile' %}selected{% endif %}>Difficile</option>
+    </select>
+    <input type="number" name="calories_max" value="{{ calories_max }}" placeholder="Calories max">
+    <select name="favs">
+      <option value="">Toutes</option>
+      <option value="1" {% if request.GET.favs == '1' %}selected{% endif %}>Mes favoris</option>
+    </select>
+    <button type="submit">Filtrer</button>
+  </form>
+</section>
 
-    /* Success toast */
-    .toast {
-      position: fixed;
-      bottom: 28px;
-      right: 28px;
-      background: #2d5a3d;
-      color: #fff;
-      padding: 14px 22px;
-      border-radius: 10px;
-      font-size: 0.82rem;
-      font-weight: 500;
-      box-shadow: 0 8px 28px rgba(0,0,0,0.3);
-      border-left: 3px solid var(--orange);
-      transform: translateY(10px);
-      opacity: 0;
-      transition: opacity 0.3s, transform 0.3s;
-      z-index: 999;
-      pointer-events: none;
-    }
-    .toast.show { opacity: 1; transform: translateY(0); }
-  </style>
-</head>
-<body>
+<div class="results-row">
+  <div class="subtle">{{ products|length }} recette{{ products|length|pluralize }} affichée{{ products|length|pluralize }}</div>
+  <a class="ghost-btn" href="{% url 'recipes:index' %}?tab={{ current_tab }}">Réinitialiser</a>
+</div>
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sidebar-logo">Bio<span>delice</span></div>
-    <ul class="side-links">
-      <li>
-        <a href="{% url 'recipes:index' %}" class="{% if not is_regime_page %}active{% endif %}">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-          Recommandé
-        </a>
-      </li>
-      <li>
-        <a href="{% url 'recipes:regime' %}" class="{% if is_regime_page %}active{% endif %}">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-          Mon Régime Adapté
-        </a>
-      </li>
-      <li>
-        <a href="{% url 'recipes:planner' %}">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          Meal Planner
-        </a>
-      </li>
-    </ul>
-  </aside>
-
-  <div class="main-wrapper">
-  <!-- NAVBAR -->
-  <nav>
-    <!-- Search with gradient border -->
-    <div class="search-wrap">
-      <form id="searchForm" method="GET" action="{% if is_regime_page %}{% url 'recipes:regime' %}{% else %}{% url 'recipes:index' %}{% endif %}" class="search-bar" style="margin: 0;">
-        <input type="hidden" name="tab" value="{{ current_tab }}">
-        <button type="submit" style="background: none; border: none; padding: 0; cursor: pointer; display: flex;">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-        </button>
-        <input type="text" name="q" value="{{ request.GET.q|default_if_none:'' }}" placeholder="Search for a recipe ..."/>
-      </form>
-    </div>
-
-    <!-- Icons -->
-    <div class="nav-right">
-      <div class="nav-icon" title="Notifications">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-        </svg>
-      </div>
-      <div class="profile-wrap">
-        <div class="nav-icon avatar-btn" id="avatarBtn" title="Profil">
-          <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&q=80" alt="avatar"/>
-        </div>
-
-        <!-- Dropdown -->
-        <div class="dropdown" id="dropdown">
-          <div class="dropdown-header">
-            <div class="d-name">{{ request.user.full_name|default:request.user.email }}</div>
-            <div class="d-email">{{ request.user.email }}</div>
-          </div>
-          <div class="dropdown-item" id="editProfileBtn">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
-            Modifier le profil
-          </div>
-          <div class="dropdown-item logout" id="logoutBtn">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-              <polyline points="16 17 21 12 16 7"/>
-              <line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-            Se déconnecter
-          </div>
+<section class="recipe-grid">
+  {% for product in products %}
+    <article
+      class="panel recipe-card"
+      onclick="openDetail(this)"
+      data-name="{{ product.name|escapejs }}"
+      data-image="{{ product.image_url|default:'https://via.placeholder.com/800x500?text=Recette' }}"
+      data-nutri="{{ product.nutriscore|lower|default:'n' }}"
+      data-ingredients="{{ product.ingredients_text|default:'Non spécifiés.'|escapejs }}"
+      data-allergens="{{ product.allergens_tags|default:'Aucun'|escapejs }}"
+      data-calories="{{ product.calories }}"
+      data-difficulty="{{ product.difficulty|default:'-'|escapejs }}"
+    >
+      <div class="card-media">
+        <img src="{{ product.image_url|default:'https://via.placeholder.com/800x500?text=Recette' }}" alt="{{ product.name }}">
+        <div class="badge-row">
+          <span class="nutri {{ product.nutriscore|lower|default:'n' }}">{{ product.nutriscore|upper|default:'N' }}</span>
+          <button class="fav-btn {% if product.id in user_favorites %}active{% endif %}" type="button" onclick="toggleFavorite(event, {{ product.id }}, this)">❤</button>
         </div>
       </div>
-    </div>
-  </nav>
-
-  <!-- MAIN -->
-  <main>
-
-    <!-- Stats Banner -->
-    <div class="stats-banner text-center" style="margin-bottom: 20px; font-size: 0.9rem; color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px;">
-        Découvrez nos <strong>{{ total_recipes }}</strong> recettes, dont <strong>{{ total_sale }}</strong> plats salés et <strong>{{ total_sucre }}</strong> desserts !
-    </div>
-
-    <!-- Tabs -->
-    <div class="tabs">
-      <a href="?tab=sale{% if query %}&q={{ query }}{% endif %}" class="tab {% if current_tab == 'sale' %}active{% endif %}" style="text-decoration: none;">Salé</a>
-      <a href="?tab=sucre{% if query %}&q={{ query }}{% endif %}" class="tab {% if current_tab == 'sucre' %}active{% endif %}" style="text-decoration: none;">Sucré</a>
-    </div>
-
-    <!-- Filters -->
-    <div class="filters-row">
-      <span class="filter-label">Filtrer par</span>
-
-      <div class="filter-pill">
-        populaire
-      </div>
-      <div class="filter-pill" style="padding: 0; display: flex; align-items: center;">
-        <input type="number" name="calories_max" form="searchForm" value="{{ calories_max }}" placeholder="Kcal max" style="background:transparent; border:none; color:rgba(255,255,255,0.8); outline:none; padding: 8px 6px 8px 16px; width: 90px; font-size:0.75rem;" onkeypress="if(event.key === 'Enter'){ this.form.submit(); }">
-        <svg onclick="document.getElementById('searchForm').submit();" style="cursor:pointer; margin-right:12px; opacity:0.7;" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-      </div>
-      <div class="filter-pill" style="padding: 0;">
-        <select name="difficulty" form="searchForm" onchange="this.form.submit()" style="background:transparent; border:none; color:rgba(255,255,255,0.8); outline:none; padding: 8px 16px; cursor:pointer; font-size:0.75rem; appearance: none;">
-          <option value="" style="color:#000;">Difficulté</option>
-          <option value="Facile" style="color:#000;" {% if selected_difficulty == "Facile" %}selected{% endif %}>Facile</option>
-          <option value="Moyen" style="color:#000;" {% if selected_difficulty == "Moyen" %}selected{% endif %}>Moyen</option>
-          <option value="Difficile" style="color:#000;" {% if selected_difficulty == "Difficile" %}selected{% endif %}>Difficile</option>
-        </select>
-      </div>
-      <div class="filter-pill {% if request.GET.favs == '1' %}active{% endif %}" onclick="toggleFavFilter()" style="cursor: pointer;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="{% if request.GET.favs == '1' %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-        my favs
-      </div>
-    </div>
-
-    <!-- Count -->
-    <div class="count-row">
-      <button class="count-btn">
-        Produits trouvés : {{ products|length }}
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-    </div>
-
-    <!-- Recipe Grid -->
-    <div class="recipe-grid" id="recipeGrid">
-      {% for product in products %}
-      <div class="recipe-card" onclick="openDetail('{{ product.name|escapejs }}', '{{ product.image_url|default:'https://via.placeholder.com/400x220?text=No+Image' }}', '{{ product.nutriscore|upper|default:'?' }}', '{{ product.ingredients_text|escapejs }}', '{{ product.allergens_tags|escapejs }}', '{{ product.sugars_100g }}', '{{ product.salt_100g }}')">
-        <div class="btn-fav {% if product.id in user_favorites %}active{% endif %}" onclick="toggleFavorite(event, {{ product.id }}, this)" title="Ajouter aux favoris">
-          <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-        </div>
-        <img class="recipe-img" src="{{ product.image_url|default:'https://via.placeholder.com/110x120?text=No+Image' }}" alt="{{ product.name }}" loading="lazy"/>
-        <div class="recipe-info">
-          <div>
-            <div class="recipe-title">{{ product.name }}</div>
-            <div class="recipe-desc" style="margin-top: 4px;">
-              Nutriscore: {{ product.nutriscore|upper|default:'N/A' }}<br/>
-              <span style="display:inline-block; margin-top:4px; padding: 2px 6px; background: rgba(232,98,26,0.15); color: var(--orange); border-radius: 4px;">🔥 {{ product.calories }} kcal</span>
-              <span style="display:inline-block; margin-top:4px; padding: 2px 6px; background: rgba(255,255,255,0.1); border-radius: 4px;">⏱️ {{ product.difficulty|default:"Inconnue" }}</span>
-            </div>
-          </div>
-          <div class="stars">
-            <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star empty">★</span>
-          </div>
+      <div class="card-body">
+        <h3>{{ product.name }}</h3>
+        <div class="meta-row">
+          <span>{{ product.calories }} kcal</span>
+          <span>{{ product.difficulty|default:"-" }}</span>
+          <span>{{ product.category|title }}</span>
         </div>
       </div>
-      {% empty %}
-        <p style="color:rgba(255,255,255,0.4);grid-column:span 3;text-align:center;padding:40px">Aucun produit trouvé respectant vos contraintes de santé.</p>
-      {% endfor %}
+    </article>
+  {% empty %}
+    <div class="panel" style="padding:24px;">Aucune recette trouvée.</div>
+  {% endfor %}
+</section>
+
+<div class="detail-overlay" id="detailOverlay" onclick="closeDetail(event)">
+  <div class="detail-modal">
+    <div class="detail-cover">
+      <img id="detailImg" src="" alt="">
     </div>
-
-    <style>
-      @keyframes spin { to { transform: rotate(360deg); } }
-
-      /* Skeleton cards */
-      .skeleton {
-        background: rgba(255,255,255,0.06);
-        border-radius: 12px;
-        height: 130px;
-        overflow: hidden;
-        position: relative;
-      }
-      .skeleton::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%);
-        animation: shimmer 1.4s infinite;
-      }
-      @keyframes shimmer {
-        from { transform: translateX(-100%); }
-        to   { transform: translateX(100%); }
-      }
-
-      /* Recipe detail modal */
-      .detail-modal {
-        background: #1a3526;
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 18px;
-        width: 580px;
-        max-width: 95vw;
-        max-height: 88vh;
-        overflow-y: auto;
-        box-shadow: 0 24px 80px rgba(0,0,0,0.5);
-        transform: translateY(20px);
-        transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
-      }
-      .modal-overlay.show .detail-modal { transform: translateY(0); }
-
-      .detail-hero {
-        width: 100%;
-        height: 220px;
-        object-fit: cover;
-        border-radius: 18px 18px 0 0;
-        display: block;
-      }
-      .detail-body { padding: 28px 32px 32px; }
-      .detail-tags {
-        display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;
-      }
-      .detail-tag {
-        padding: 4px 12px;
-        border-radius: 20px;
-        background: rgba(232,98,26,0.15);
-        color: var(--orange);
-        font-size: 0.68rem;
-        font-weight: 500;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-      }
-      .detail-title {
-        font-family: 'Playfair Display', serif;
-        font-size: 1.6rem;
-        font-weight: 600;
-        color: #fff;
-        margin-bottom: 8px;
-      }
-      .detail-meta {
-        font-size: 0.74rem;
-        color: rgba(255,255,255,0.45);
-        margin-bottom: 22px;
-      }
-      .detail-section-title {
-        font-size: 0.65rem;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        color: rgba(255,255,255,0.35);
-        margin-bottom: 12px;
-        margin-top: 22px;
-      }
-      .ingredients-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-        margin-bottom: 6px;
-      }
-      .ingredient-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.78rem;
-        color: rgba(255,255,255,0.8);
-      }
-      .ingredient-item::before {
-        content: '';
-        width: 6px; height: 6px;
-        border-radius: 50%;
-        background: var(--orange);
-        flex-shrink: 0;
-      }
-      .instructions-text {
-        font-size: 0.78rem;
-        color: rgba(255,255,255,0.7);
-        line-height: 1.75;
-        white-space: pre-line;
-      }
-      .detail-close {
-        position: absolute;
-        top: 16px; right: 16px;
-        width: 34px; height: 34px;
-        border-radius: 50%;
-        background: rgba(0,0,0,0.5);
-        border: none;
-        color: #fff;
-        cursor: pointer;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1rem;
-        backdrop-filter: blur(4px);
-        transition: background 0.2s;
-      }
-      .detail-close:hover { background: rgba(0,0,0,0.75); }
-      .detail-modal { position: relative; }
-    </style>
-
-  </main>
-
-  <!-- RECIPE DETAIL MODAL -->
-  <div class="modal-overlay" id="detailOverlay">
-    <div class="detail-modal" id="detailModal">
-      <button class="detail-close" id="detailCloseBtn">✕</button>
-      <img id="detailImg" class="detail-hero" src="" alt=""/>
-      <div class="detail-body">
-        <div class="detail-tags" id="detailTags"></div>
-        <div class="detail-title" id="detailTitle"></div>
-        <div class="detail-meta" id="detailMeta"></div>
-        <div class="detail-section-title">Ingrédients</div>
-        <div class="ingredients-grid" id="detailIngredients"></div>
-        <div class="detail-section-title">Instructions</div>
-        <div class="instructions-text" id="detailInstructions"></div>
+    <div class="detail-body">
+      <h2 class="modal-title" id="detailTitle"></h2>
+      <p class="detail-copy" id="detailMeta"></p>
+      <div class="detail-grid">
+        <div class="detail-card">
+          <strong>Ingrédients</strong>
+          <div id="detailIngredients"></div>
+        </div>
+        <div class="detail-card">
+          <strong>Allergènes</strong>
+          <div id="detailAllergens"></div>
+        </div>
       </div>
     </div>
   </div>
-  </div> <!-- /main-wrapper -->
+</div>
+{% endblock %}
 
-  <!-- PROFILE MODAL -->
-  <div class="modal-overlay" id="modalOverlay">
-    <div class="modal">
-      <div class="modal-top">
-        <span class="modal-title">Modifier le profil</span>
-        <button class="modal-close" id="modalCloseBtn">✕</button>
-      </div>
+{% block extra_js %}
+<script>
+  function openDetail(card) {
+    document.getElementById('detailImg').src = card.dataset.image;
+    document.getElementById('detailTitle').textContent = card.dataset.name;
+    document.getElementById('detailMeta').textContent = `Nutriscore ${card.dataset.nutri.toUpperCase()} • ${card.dataset.calories} kcal • ${card.dataset.difficulty}`;
+    document.getElementById('detailIngredients').innerHTML = card.dataset.ingredients
+      .split(',')
+      .map(item => `<div class="detail-copy">${item.trim()}</div>`)
+      .join('') || '<div class="detail-copy">Non spécifiés.</div>';
+    document.getElementById('detailAllergens').innerHTML = card.dataset.allergens
+      .split(',')
+      .map(item => `<div class="detail-copy">${item.trim()}</div>`)
+      .join('') || '<div class="detail-copy">Aucun</div>';
+    document.getElementById('detailOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
 
-      <!-- Avatar -->
-      <div class="modal-avatar">
-        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&q=80" alt="avatar"/>
-        <div class="modal-avatar-info">
-          <div class="label">Photo de profil</div>
-          <div class="change-photo">Changer la photo</div>
-        </div>
-      </div>
+  function closeDetail(event) {
+    if (event.target.id === 'detailOverlay') {
+      document.getElementById('detailOverlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  }
 
-      <form id="profileForm">
-        {% csrf_token %}
-
-        <!-- Infos perso -->
-        <div class="modal-section">Informations personnelles</div>
-        <div class="modal-row">
-          <div class="modal-field">
-            <label>Prénom</label>
-            <input type="text" id="firstName" value="{{ request.user.first_name }}" placeholder="Prénom"/>
-          </div>
-          <div class="modal-field">
-            <label>Nom</label>
-            <input type="text" id="lastName" value="{{ request.user.last_name }}" placeholder="Nom"/>
-          </div>
-          <div class="modal-field full">
-            <label>Adresse e-mail</label>
-            <input type="email" id="email" value="{{ request.user.email }}" placeholder="email@exemple.com"/>
-          </div>
-        </div>
-
-        <div class="modal-divider"></div>
-
-        <!-- Mot de passe -->
-        <div class="modal-section">Changer le mot de passe</div>
-        <div class="modal-row">
-          <div class="modal-field full">
-            <label>Ancien mot de passe</label>
-            <input type="password" id="oldPassword" placeholder="Entrez votre ancien mot de passe"/>
-            <span class="field-error" id="oldPwError">Mot de passe incorrect</span>
-          </div>
-          <div class="modal-field">
-            <label>Nouveau mot de passe</label>
-            <input type="password" id="newPassword" placeholder="Nouveau mot de passe"/>
-            <span class="field-hint">8 caractères minimum</span>
-          </div>
-          <div class="modal-field">
-            <label>Confirmer</label>
-            <input type="password" id="confirmPassword" placeholder="Confirmer le mot de passe"/>
-            <span class="field-error" id="confirmPwError">Les mots de passe ne correspondent pas</span>
-          </div>
-        </div>
-
-        <div class="modal-actions">
-          <button type="button" class="btn-cancel" id="cancelBtn">Annuler</button>
-          <button type="submit" class="btn-save">Enregistrer les modifications</button>
-        </div>
-
-      </form>
-    </div>
-  </div>
-
-  <!-- Toast -->
-  <div class="toast" id="toast">✓ Profil mis à jour avec succès</div>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-
-      // ══════════════════════════════════════════
-      //  Product Detail Modal
-      // ══════════════════════════════════════════
-      var detailOverlay = document.getElementById('detailOverlay');
-      document.getElementById('detailCloseBtn').addEventListener('click', closeDetail);
-      detailOverlay.addEventListener('click', function(e) { if (e.target === detailOverlay) closeDetail(); });
-
-      const substitutionDict = {
-          // 🌾 ALLERGIE AU GLUTEN & MALADIE CŒLIAQUE
-          "gluten": [
-              { match: ["farine de blé", "farine blanche", "blé", "ble", "farine de froment", "farine t55", "farine t45"], replace: "🌽 farine de maïs, de riz ou fécule de pomme de terre", difficulty: "orange" },
-              { match: ["pâtes", "coquillettes", "spaghetti", "macaroni", "nouilles", "tagliatelles", "penne", "farfalle"], replace: "🍝 pâtes de lentilles corail, de sarrasin ou de riz", difficulty: "vert" },
-              { match: ["chapelure", "panure", "panko"], replace: "🥖 polenta, amandes en poudre ou flocons d'avoine certifiés sans gluten", difficulty: "vert" },
-              { match: ["semoule", "couscous", "boulgour"], replace: "🌾 quinoa, semoule de maïs ou de riz", difficulty: "vert" },
-              { match: ["sauce soja", "sauce maggi", "sauce teriyaki"], replace: "🍶 sauce tamari (strictement sans gluten) ou coconut aminos", difficulty: "vert" },
-              { match: ["bière"], replace: "🍺 bière sans gluten ou cidre", difficulty: "vert" },
-              { match: ["seigle", "orge", "épeautre", "petit épeautre", "kamut", "avoine non certifiée"], replace: "🌾 sarrasin, teff, amarante ou millet", difficulty: "orange" },
-              { match: ["seitan", "protéine de blé", "gluten de blé"], replace: "🫘 tofu ferme, tempeh ou protéines de pois", difficulty: "orange" },
-              { match: ["tortillas de blé", "wraps", "pain pita", "naan"], replace: "🌮 tortillas de maïs (100%) ou feuilles de riz", difficulty: "vert" },
-              { match: ["levure chimique", "poudre à lever"], replace: "🥄 bicarbonate de soude avec un trait de citron", difficulty: "vert" }
-          ],
-          // 🥛 INTOLÉRANCE AU LACTOSE / VÉGANISME
-          "lactose": [
-              { match: ["lait de vache", "lait", "lait entier", "lait demi-écrémé", "lait écrémé"], replace: "🥛 lait d'amande, d'avoine ou de soja", difficulty: "vert" },
-              { match: ["beurre", "beurre doux", "beurre salé", "ghee", "beurre clarifié"], replace: "🧈 margarine végétale, huile de coco ou purée d'amande", difficulty: "orange" },
-              { match: ["crème fraîche", "crème liquide", "crème fleurette", "crème épaisse"], replace: "🥥 crème de coco, crème de soja ou de cajou", difficulty: "vert" },
-              { match: ["fromage", "gruyère", "parmesan", "emmental", "cheddar", "mozzarella", "feta", "gouda", "brie", "camembert"], replace: "🧀 fauxmage (à base de cajou, amande) ou levure diététique", difficulty: "orange" },
-              { match: ["yaourt", "yaourt nature", "fromage blanc", "petit-suisse", "skyr", "yaourt grec"], replace: "🥣 yaourt au soja, à l'amande ou à la noix de coco", difficulty: "vert" },
-              { match: ["mascarpone", "ricotta", "philadelphia", "cream cheese", "fromage à tartiner"], replace: "🍮 crème de cajou mixée, tofu soyeux ou cream cheese vegan", difficulty: "orange" },
-              { match: ["lait concentré", "lait concentré sucré"], replace: "🥥 lait de coco concentré sucré", difficulty: "vert" },
-              { match: ["babeurre", "buttermilk", "lait ribot"], replace: "🥛 lait de soja mélangé avec 1 c.à.s de vinaigre de cidre (laisser cailler 10 min)", difficulty: "vert" },
-              { match: ["lait en poudre"], replace: "🥥 poudre de lait de coco ou lait de soja en poudre", difficulty: "vert" },
-              { match: ["petit-lait", "whey", "protéine de lactosérum"], replace: "💪 protéine de pois, de riz ou de chanvre en poudre", difficulty: "vert" }
-          ],
-          // 🩸 DIABÈTE (Réduction de l'indice glycémique)
-          "diabète": [
-              { match: ["sucre vanillé", "vanille sucre", "sucre aromatisé à la vanille", "vanilla sugar"], replace: "🌼 extrait de vanille sans sucre ou érythritol vanillé", difficulty: "vert" },
-              { match: ["sucre glace", "powder sucre", "sucre impalpable", "powdered sugar"], replace: "❄️ érythritol mixé finement au blender", difficulty: "vert" },
-              { match: ["sucre", "sucre blanc", "sucre en poudre", "sucre roux", "cassonade", "sucre de canne", "vergeoise"], replace: "🌿 stévia, érythritol, xylitol ou fruit du moine", difficulty: "vert" },
-              { match: ["miel", "sirop d'érable", "sirop d'agave", "mélasse", "sirop de glucose", "sirop de maïs", "golden syrup"], replace: "🍁 sirop de Yacon (très faible IG) ou sirop de fibres", difficulty: "orange" },
-              { match: ["confiture", "gelée", "marmelade"], replace: "🍓 compote sans sucre ajouté ou purée de fruits maison épaissie aux graines de chia", difficulty: "vert" },
-              { match: ["chocolat au lait", "chocolat blanc", "chocolat en poudre", "pâte à tartiner", "nutella", "nesquik"], replace: "🍫 chocolat noir à 70% minimum ou cacao cru en poudre sans sucre", difficulty: "vert" },
-              { match: ["farine blanche", "farine de blé", "farine de riz blanc", "Maïzena", "fécule de maïs"], replace: "🌾 farine complète, farine de pois chiche, de lupin, d'orge ou d'amande (IG plus bas)", difficulty: "orange" },
-              { match: ["riz blanc", "riz à sushi", "riz basmati blanc", "riz thaï"], replace: "🍚 riz complet, riz sauvage, quinoa ou orge mondé", difficulty: "vert" },
-              { match: ["pomme de terre", "pommes de terre", "purée mousline"], replace: "🍠 patate douce (IG modéré), courge butternut ou chou-fleur (en purée)", difficulty: "orange" },
-              { match: ["dattes", "raisins secs", "fruits confits", "abricots secs"], replace: "🫐 baies fraîches (myrtilles, framboises, fraises) ou oléagineux (noix, amandes)", difficulty: "vert" }
-          ],
-          // 🫀 HYPERTENSION & MALADIES CARDIOVASCULAIRES
-          "hypertension": [
-              { match: ["sel", "sel fin", "gros sel", "fleur de sel", "sel de mer", "sel rose"], replace: "🧂 gomasio (sésame broyé), épices, ail en poudre ou herbes aromatiques", difficulty: "vert" },
-              { match: ["bouillon cube", "cube maggi", "fond de veau", "fond de volaille", "viandox", "bouillon de bœuf"], replace: "🧅 bouillon de légumes maison ou cube sans sel ajouté en magasin bio", difficulty: "vert" },
-              { match: ["sauce soja", "sauce teriyaki", "sauce nuoc-mâm"], replace: "🍶 sauce soja à teneur réduite en sel (bouchon vert) ou coconut aminos", difficulty: "vert" },
-              { match: ["moutarde", "ketchup", "sauce barbecue", "mayonnaise industrielle"], replace: "🍋 jus de citron, vinaigre de cidre, épices ou purée de tomate nature", difficulty: "orange" },
-              { match: ["charcuterie", "lardons", "bacon", "saucisson", "jambon", "chorizo", "pancetta", "guanciale"], replace: "🥓 tofu fumé, tempeh ou paprika fumé (pour le goût)", difficulty: "orange" },
-              { match: ["anchois", "câpres", "olives en saumure", "olives noires", "olives vertes"], replace: "🧄 ail confit, tomates séchées (réhydratées sans sel) ou algues douces", difficulty: "vert" },
-              { match: ["feta", "roquefort", "parmesan", "fromage bleu", "pecorino"], replace: "🧀 fromages frais pauvres en sel (ex: ricotta, mozzarella) ou levure diététique", difficulty: "orange" },
-              { match: ["chips", "biscuits apéritifs", "cacahuètes salées", "pistaches salées"], replace: "🥜 oléagineux nature non salés (amandes, noix) ou pois chiches rôtis aux épices", difficulty: "vert" }
-          ],
-          // 🥚 ALLERGIE AUX ŒUFS
-          "oeuf": [
-              { match: ["œuf", "oeuf", "œufs", "oeufs", "oeuf entier", "œufs entiers", "1 oeuf", "2 oeufs", "3 oeufs"], replace: "🍏 compote de pommes (60g = 1 œuf), demi-banane écrasée ou 'œuf de chia' (1 c.à.s de chia + 3 d'eau)", difficulty: "orange" },
-              { match: ["blanc d'œuf", "blancs d'œufs", "blanc d'oeuf", "blancs d'oeufs"], replace: "💧 aquafaba (jus de boîte de pois chiches monté en neige ferme)", difficulty: "orange" },
-              { match: ["jaune d'œuf", "jaunes d'œufs", "jaune d'oeuf", "jaunes d'oeufs"], replace: "🥑 purée d'avocat, tofu soyeux mixé ou fécule de maïs (pour l'effet liant)", difficulty: "orange" },
-              { match: ["mayonnaise", "mayo"], replace: "🥣 mayonnaise végétale (veganaise) ou yaourt grec/soja fouetté avec de la moutarde", difficulty: "vert" },
-              { match: ["meringue", "meringues"], replace: "☁️ meringue d'aquafaba", difficulty: "orange" }
-          ],
-          // 🥜 ALLERGIE AUX ARACHIDES & FRUITS À COQUE
-          "arachide": [
-              { match: ["cacahuète", "arachide", "cacahuètes", "arachides", "beurre de peanut"], replace: "🌻 graines de tournesol, pois chiches grillés ou edamame", difficulty: "vert" },
-              { match: ["beurre de cacahuète", "beurre d'arachide", "beurre de peanut"], replace: "🍯 purée de sésame (tahin), beurre de graines de tournesol ou purée de soja", difficulty: "vert" },
-              { match: ["huile d'arachide"], replace: "🫒 huile d'olive, d'avocat ou de pépins de raisin", difficulty: "vert" },
-              { match: ["amande", "amandes", "noix", "noisette", "noisettes", "noix de pécan", "noix de cajou", "macadamia", "pistache", "pistaches", "pignons de pin", "pignons", "noix de brésil"], replace: "🎃 graines de courge, graines de chanvre, graines de tournesol ou flocons d'avoine grillés", difficulty: "orange" },
-              { match: ["poudre d'amande", "poudre de noisette", "praliné", "amande en poudre"], replace: "🥥 noix de coco râpée, farine de souchet ou graines de tournesol mixées très finement", difficulty: "orange" },
-              { match: ["pâte d'amande", "massepain", "frangipane"], replace: "🍡 pâte de haricots blancs sucrée (shiroan) ou pâte de graines de tournesol", difficulty: "orange" },
-              { match: ["lait d'amande", "lait de noisette", "lait de macadamia", "lait de cajou"], replace: "🥛 lait d'avoine, lait de soja ou lait de riz", difficulty: "vert" }
-          ],
-          // 🌱 ALLERGIE AU SOJA
-          "soja": [
-              { match: ["soja", "fèves de soja", "edamame", "pousses de soja", "haricot mungo"], replace: "🫘 fèves, petits pois, haricots verts ou pois croquants", difficulty: "vert" },
-              { match: ["sauce soja", "sauce tamari", "shoyu", "sauce maggi"], replace: "🥥 coconut aminos (aminos de coco) ou bouillon de champignons corsé", difficulty: "vert" },
-              { match: ["tofu", "tofu ferme", "tofu soyeux"], replace: "🧀 tofu de pois chiche (burmese tofu), seitan ou ricotta (si le lactose est toléré)", difficulty: "orange" },
-              { match: ["tempeh"], replace: "🍄 gros champignons portobello grillés ou tranches de seitan marinées", difficulty: "orange" },
-              { match: ["lait de soja"], replace: "🥛 lait d'avoine, lait d'amande ou lait de chanvre", difficulty: "vert" },
-              { match: ["crème de soja", "soja cuisine"], replace: "🥥 crème de coco ou crème d'amande (amande cuisine)", difficulty: "vert" },
-              { match: ["protéines de soja texturées", "pst", "protéines de soja"], replace: "🥩 haché végétal à base de pois, lentilles ou viande hachée (si non végétarien)", difficulty: "orange" },
-              { match: ["miso", "pâte de miso"], replace: "🥄 pâte de sésame (tahin) mélangée avec un peu de sel ou bouillon concentré", difficulty: "orange" }
-          ],
-          // 🐟 ALLERGIE AUX POISSONS ET CRUSTACÉS / VÉGANISME MARIN
-          "poisson": [
-              { match: ["poisson", "saumon", "cabillaud", "colin", "truite", "thon", "filet de poisson", "dos de cabillaud", "bar"], replace: "🍆 aubergines marinées, tofu enveloppé d'algue nori ou banane plantain", difficulty: "orange" },
-              { match: ["crevette", "crevettes", "scampi", "gambas", "langoustine"], replace: "🍄 pleurotes sautées (texture très similaire) ou substituts vegan à base de konjac", difficulty: "orange" },
-              { match: ["crabe", "surimi", "chair de crabe", "homard", "tourteau"], replace: "🌴 cœurs de palmier effilochés ou fruit du jacquier (jackfruit)", difficulty: "vert" },
-              { match: ["sauce nuoc-mâm", "sauce poisson", "nuoc mam", "sauce d'huître", "sauce huitre"], replace: "🍶 sauce soja (tamari) infusée aux algues wakamé ou coconut aminos", difficulty: "vert" },
-              { match: ["anchois", "pâte d'anchois", "sardines"], replace: "🫒 pâte d'olives noires (tapenade), câpres hachées ou flocons d'algues dulse", difficulty: "vert" },
-              { match: ["caviar", "œufs de lump", "oeufs de lump", "tarama"], replace: "🫧 perles de tapioca marinées à la sauce soja ou houmous d'algues", difficulty: "vert" },
-              { match: ["calamar", "encornet", "poulpe"], replace: "🍄 anneaux de pleurotes du panicaut (king oyster) poêlés", difficulty: "orange" }
-          ],
-          // 🥩 VÉGÉTARIEN / VÉGANISME (Substitution de viande)
-          "viande": [
-              { match: ["bœuf", "boeuf", "viande hachée", "steak haché", "veau", "mouton", "agneau", "viande de grison", "carpaccio"], replace: "🫘 protéines de soja texturées (PST), haché végétal (ex: Beyond Meat) ou lentilles", difficulty: "orange" },
-              { match: ["poulet", "blanc de poulet", "filet de poulet", "dinde", "volaille", "aiguillettes"], replace: "🍗 seitan, tofu ferme, émincés de soja ou fruit du jacquier (pour l'effiloché)", difficulty: "orange" },
-              { match: ["porc", "lardons", "bacon", "jambon", "jambon blanc", "saucisse", "chorizo", "chair à saucisse", "filet mignon"], replace: "🥓 tofu fumé coupé en dés, tempeh mariné, saucisses végétales ou seitan fumé", difficulty: "orange" },
-              { match: ["bouillon de viande", "bouillon de bœuf", "fond de veau", "jus de viande", "jus de rôti"], replace: "🧅 bouillon de champignons noir corsé, bouillon de légumes riche ou miso dilué", difficulty: "vert" },
-              { match: ["gélatine", "feuille de gélatine", "gélatine de porc"], replace: "🌿 agar-agar (attention au dosage, l'agar-agar est 4 fois plus puissant)", difficulty: "orange" },
-              { match: ["saindoux", "graisse de canard", "graisse d'oie", "suif"], replace: "🥥 huile de coco désodorisée, beurre de cacao ou margarine végétale solide", difficulty: "vert" }
-          ]
-      };
-
-      // ── DICTIONNAIRE DE TRADUCTION ANGLAIS -> FRANÇAIS ──
-      const EN_FR_DICT = {
-        "sugar": "sucre", "salt": "sel", "flour": "farine", "wheat": "blé",
-        "butter": "beurre", "milk": "lait", "water": "eau", "egg": "œuf", "eggs": "œufs",
-        "garlic": "ail", "onion": "oignon", "onions": "oignons", "olive oil": "huile d'olive",
-        "pepper": "poivre", "black pepper": "poivre noir", "chicken": "poulet", "beef": "bœuf",
-        "pork": "porc", "cheese": "fromage", "tomato": "tomate", "tomatoes": "tomates",
-        "potato": "pomme de terre", "potatoes": "pommes de terre", "lemon": "citron",
-        "lemon juice": "jus de citron", "apple": "pomme", "apples": "pommes",
-        "cream": "crème", "vanilla": "vanille", "vanilla extract": "extrait de vanille",
-        "cinnamon": "cannelle", "baking powder": "levure chimique", "baking soda": "bicarbonate de soude",
-        "yeast": "levure", "honey": "miel", "soy sauce": "sauce soja", "pasta": "pâtes",
-        "rice": "riz", "bread": "pain", "broth": "bouillon", "carrot": "carotte",
-        "carrots": "carottes", "oil": "huile", "vinegar": "vinaigre", "mustard": "moutarde",
-        "ginger": "gingembre", "soy": "soja", "almond": "amande", "almonds": "amandes",
-        "peanut": "cacahuète", "peanuts": "cacahuètes", "walnut": "noix", "walnuts": "noix",
-        "chocolate": "chocolat", "cocoa": "cacao", "beef broth": "bouillon de bœuf",
-        "chicken broth": "bouillon de volaille", "vegetable broth": "bouillon de légumes",
-        "heavy cream": "crème liquide", "sour cream": "crème fraîche",
-        "brown sugar": "sucre roux", "powdered sugar": "sucre glace", "maple syrup": "sirop d'érable",
-        "cornstarch": "fécule de maïs", "all purpose flour": "farine de blé",
-        "kosher salt": "gros sel", "sea salt": "sel de mer", "unsalted butter": "beurre doux"
-      };
-
-      function adaptIngredients(ingredientsText, userConstraints) {
-          let finalText = ingredientsText.toLowerCase();
-
-          // Traduction automatique avant l'adaptation
-          const transKeys = Object.keys(EN_FR_DICT).sort((a, b) => b.length - a.length);
-          for (const en of transKeys) {
-              const regex = new RegExp(`\\b${en}\\b`, 'gi');
-              finalText = finalText.replace(regex, EN_FR_DICT[en]);
-          }
-
-          // On parcourt les maladies/allergies de l'utilisateur
-          userConstraints.forEach(constraint => {
-              let key = constraint.toLowerCase();
-              
-              // Cœliaque est souvent associé au mot clé "gluten"
-              if (key.includes("cœliaque") || key.includes("coeliaque")) key = "gluten";
-              // Nettoyage rapide pour les accents
-              if (key.includes("diabete")) key = "diabète";
-              // Alias supplémentaires pour une meilleure couverture
-              if (key.includes("lait") || key.includes("vegan") || key.includes("végétalien")) key = "lactose";
-              if (key.includes("oeuf") || key.includes("œuf")) key = "oeuf";
-              if (key.includes("arachide") || key.includes("coque") || key.includes("cacahuète")) key = "arachide";
-              if (key.includes("poisson") || key.includes("crustacé")) key = "poisson";
-              if (key.includes("viande") || key.includes("végétarien")) key = "viande";
-
-              // Si la contrainte existe dans notre dictionnaire
-              if (substitutionDict[key]) {
-                  let rules = substitutionDict[key];
-                  
-                  // On applique chaque règle de remplacement
-                  rules.forEach(rule => {
-                      // Tri par longueur décroissante (évite que "blé" casse "farine de blé")
-                      let sortedMatches = rule.match.sort((a, b) => b.length - a.length);
-                      let regexPattern = sortedMatches.map(m => m.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
-                      
-                      // Expression régulière optimisée pour le français (remplace le \b qui bug sur les accents)
-                      let regex = new RegExp(`(^|[\\\\s,;.\\\'"+-])(${regexPattern})(?=[\\\\s,;.\\\'"+-]|$)`, 'gi');
-                      
-                      finalText = finalText.replace(regex, (match, p1, p2) => {
-                          let color = rule.difficulty === "vert" ? "#4ade80" : "#fbbf24"; 
-                          return `${p1}<del style="opacity:0.5">${p2}</del> <span style="color:${color}; font-weight:600;" title="Adapté pour votre régime">${rule.replace}</span>`;
-                      });
-                  });
-              }
-          });
-
-          return finalText;
-      }
-
-      window.openDetail = function(name, img, nutriscore, ingredients, allergens, sugars, salt) {
-        document.getElementById('detailImg').src = img;
-        document.getElementById('detailTitle').textContent = name;
-        
-        document.getElementById('detailMeta').textContent = 
-          'Nutriscore: ' + nutriscore + '  •  Sucre: ' + sugars + 'g  •  Sel: ' + salt + 'g';
-
-        var tagsEl = document.getElementById('detailTags');
-        tagsEl.innerHTML = '';
-        if (allergens) {
-            allergens.split(',').forEach(function(tag) {
-                if(tag.trim()) tagsEl.innerHTML += '<span class="detail-tag">' + tag.replace('en:', '').trim() + '</span>';
-            });
-        }
-
-        let finalIngredients = ingredients || "Non spécifiés.";
-        let isRegime = {% if is_regime_page %}true{% else %}false{% endif %};
-
-        // ── LOGIQUE DE SUBSTITUTION ──
-        if (isRegime && finalIngredients !== "Non spécifiés.") {
-            let userConstraints = "{% for c in request.user.health_constraints.all %}{{ c.name|lower|escapejs }},{% endfor %}";
-            let userConstraintsArr = userConstraints.split(',').map(s => s.trim()).filter(Boolean);
-            finalIngredients = adaptIngredients(finalIngredients, userConstraintsArr);
-        }
-
-        document.getElementById('detailIngredients').innerHTML = '<div style="grid-column: span 2; font-size: 0.8rem; color: rgba(255,255,255,0.8); line-height: 1.6;">' + finalIngredients + '</div>';
-        
-        document.querySelectorAll('.detail-section-title')[1].style.display = 'none';
-        document.getElementById('detailInstructions').style.display = 'none';
-
-        detailOverlay.classList.add('show');
-        document.body.style.overflow = 'hidden';
-      };
-
-      function closeDetail() {
-        detailOverlay.classList.remove('show');
-        document.body.style.overflow = '';
-      }
-
-      // ══════════════════════════════════════════
-      //  Profile Dropdown & Modal
-      // ══════════════════════════════════════════
-      var avatarBtn      = document.getElementById('avatarBtn');
-      var dropdown       = document.getElementById('dropdown');
-      var editProfileBtn = document.getElementById('editProfileBtn');
-      var logoutBtn      = document.getElementById('logoutBtn');
-      var modalOverlay   = document.getElementById('modalOverlay');
-      var modalCloseBtn  = document.getElementById('modalCloseBtn');
-      var cancelBtn      = document.getElementById('cancelBtn');
-
-      avatarBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        var open = dropdown.classList.toggle('show');
-        avatarBtn.classList.toggle('open', open);
-      });
-      document.addEventListener('click', function(e) {
-        var wrap = document.querySelector('.profile-wrap');
-        if (wrap && !wrap.contains(e.target)) {
-          dropdown.classList.remove('show');
-          avatarBtn.classList.remove('open');
-        }
-      });
-
-      function openModal() {
-        dropdown.classList.remove('show');
-        avatarBtn.classList.remove('open');
-        modalOverlay.classList.add('show');
-        document.body.style.overflow = 'hidden';
-      }
-      function closeModal() {
-        modalOverlay.classList.remove('show');
-        document.body.style.overflow = '';
-        document.querySelectorAll('.field-error').forEach(function(el) { el.classList.remove('show'); });
-        document.querySelectorAll('.modal-field input').forEach(function(el) { el.classList.remove('error'); });
-        document.getElementById('oldPassword').value = '';
-        document.getElementById('newPassword').value = '';
-        document.getElementById('confirmPassword').value = '';
-      }
-
-      editProfileBtn.addEventListener('click', openModal);
-      modalCloseBtn.addEventListener('click', closeModal);
-      cancelBtn.addEventListener('click', closeModal);
-      modalOverlay.addEventListener('click', function(e) { if (e.target === modalOverlay) closeModal(); });
-
-      logoutBtn.addEventListener('click', function() {
-        showToast('👋 Déconnexion en cours…');
-                setTimeout(function() { window.location.href = '{% url "accounts:logout" %}'; }, 1200);
-      });
-
-      document.querySelector('.modal form').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        var valid  = true;
-        var oldPw  = document.getElementById('oldPassword').value;
-        var newPw  = document.getElementById('newPassword').value;
-        var confPw = document.getElementById('confirmPassword').value;
-
-        // Reset erreurs
-        document.querySelectorAll('.field-error').forEach(function(el) { el.classList.remove('show'); });
-        document.querySelectorAll('.modal-field input').forEach(function(el) { el.classList.remove('error'); });
-
-        if (oldPw || newPw || confPw) {
-            if (newPw !== confPw) {
-                document.getElementById('confirmPassword').classList.add('error');
-                document.getElementById('confirmPwError').classList.add('show');
-                valid = false;
-            }
-        }
-        if (!valid) return;
-
-        var first = document.getElementById('firstName').value;
-        var last  = document.getElementById('lastName').value;
-        var email = document.getElementById('email').value;
-        var csrf  = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-        try {
-            // 1. Mise à jour du mot de passe si rempli
-            if (oldPw && newPw) {
-                const resPw = await fetch('/accounts/profile/update/', { 
-                    method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
-                    body: JSON.stringify({ action: 'password', old_password: oldPw, new_password: newPw, confirm_password: confPw })
-                });
-                const dataPw = await resPw.json();
-                if (!dataPw.success) {
-                    if (dataPw.error === 'old_password') {
-                        document.getElementById('oldPassword').classList.add('error');
-                        document.getElementById('oldPwError').classList.add('show');
-                    } else alert("Erreur mot de passe.");
-                    return;
-                }
-            }
-            // 2. Mise à jour profil
-            const resProfile = await fetch('/accounts/profile/update/', { 
-                method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
-                body: JSON.stringify({ action: 'profile', first_name: first, last_name: last, email: email })
-            });
-            const dataProfile = await resProfile.json();
-            if (dataProfile.success) {
-                document.querySelector('.dropdown-header .d-name').textContent = dataProfile.full_name;
-                document.querySelector('.dropdown-header .d-email').textContent = dataProfile.email;
-                closeModal();
-                showToast('✓ Profil mis à jour avec succès');
-            } else alert("Erreur: Vérifiez vos informations.");
-        } catch(err) { console.error(err); }
-      });
-
-      function showToast(msg) {
-        var t = document.getElementById('toast');
-        t.textContent = msg;
-        t.classList.add('show');
-        setTimeout(function() { t.classList.remove('show'); }, 3000);
-      }
-
-      // Bascule de favori en AJAX
-      window.toggleFavorite = async function(event, productId, btnElement) {
-        event.stopPropagation(); // Évite d'ouvrir la modale de détails au clic sur le coeur
-        
-        const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        
-        try {
-          const res = await fetch(`/recipes/favorite/${productId}/`, { // Adapte l'URL selon ton urls.py
-            method: 'POST',
-            headers: {
-              'X-CSRFToken': csrf,
-              'Content-Type': 'application/json'
-            }
-          });
-          const data = await res.json();
-          
-          if (data.status === 'added') {
-            btnElement.classList.add('active');
-            showToast('❤️ Ajouté aux favoris');
-          } else if (data.status === 'removed') {
-            btnElement.classList.remove('active');
-            showToast('🤍 Retiré des favoris');
-          }
-        } catch(err) {
-          console.error("Erreur d'ajout aux favoris", err);
-          showToast('Erreur lors de la modification des favoris');
-        }
-      };
-
-      // Filtre My Favs par paramètre URL
-      window.toggleFavFilter = function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        urlParams.get('favs') === '1' ? urlParams.delete('favs') : urlParams.set('favs', '1');
-        window.location.search = urlParams.toString();
-      };
-
-    }); // DOMContentLoaded
-  </script>
-
-</body>
-</html>  
+  async function toggleFavorite(event, productId, btn) {
+    event.stopPropagation();
+    const response = await fetch(`/recipes/favorite/${productId}/`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+    });
+    const data = await response.json();
+    if (data.status === 'added') {
+      btn.classList.add('active');
+      showToast('Ajouté aux favoris');
+    } else if (data.status === 'removed') {
+      btn.classList.remove('active');
+      showToast('Retiré des favoris');
+    }
+  }
+</script>
+{% endblock %}

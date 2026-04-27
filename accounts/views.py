@@ -13,7 +13,7 @@ from .models import User, PasswordResetCode, HealthConstraint
 # ── Inscription ──────────────────────────────────────────
 def signup_view(request):
     if request.user.is_authenticated:
-        return redirect('recipes:index')
+        return redirect('recipes:regime')
 
     form = SignupForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
@@ -28,13 +28,13 @@ def signup_view(request):
 # ── Connexion ────────────────────────────────────────────
 def login_view(request):
     if request.user.is_authenticated:
-        return redirect('recipes:index')
+        return redirect('recipes:regime')
 
     form = LoginForm(request, data=request.POST or None)
     if request.method == 'POST' and form.is_valid():
         user = form.get_user()
         login(request, user)
-        next_url = request.GET.get('next', 'recipes:index')
+        next_url = request.GET.get('next', 'recipes:regime')
         return redirect(next_url)
 
     return render(request, 'accounts/login.html', {'form': form})
@@ -97,7 +97,7 @@ def profile_data(request):
 # ── Page Mot de passe oublié (HTML) ──────────────────────
 def forgot_password_view(request):
     if request.user.is_authenticated:
-        return redirect('recipes:index')
+        return redirect('recipes:regime')
     return render(request, 'accounts/forgot_password.html')
 
 
@@ -158,7 +158,7 @@ def onboarding_view(request):
             obj, created = HealthConstraint.objects.get_or_create(name=name)
             request.user.health_constraints.add(obj)
             
-        return redirect('recipes:index')
+        return redirect('recipes:regime')
     return render(request, 'accounts/onboarding.html')
 
 @login_required
@@ -177,6 +177,7 @@ def save_onboarding(request):
         user.weight = request.POST.get('weight')
         user.height = request.POST.get('height')
         user.sexe = request.POST.get('sexe')
+        user.activity_level = request.POST.get('activity_level') or 'moderate'
         
         # Étape 2
         user.restrictions = request.POST.get('restrictions', '')

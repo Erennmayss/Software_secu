@@ -137,7 +137,7 @@ AUTH_USER_MODEL = 'accounts.User'
 
 # Login/Logout URLs
 LOGIN_URL = 'accounts:login'
-LOGIN_REDIRECT_URL = 'recipes:index'
+LOGIN_REDIRECT_URL = 'recipes:regime'
 LOGOUT_REDIRECT_URL = 'main_page'
 
 # Email configuration (pour réinitialisation mot de passe - à configurer plus tard)
