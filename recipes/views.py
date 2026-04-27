@@ -63,6 +63,49 @@ def index(request):
         'total_sucre': total_sucre,
         'total_sale': total_sale,
         'user_favorites': user_favorites,
+        'is_regime_page': False,
+    })
+
+
+@login_required
+def regime(request):
+    """ 
+    Affiche toutes les recettes SANS les filtrer selon les maladies.
+    La substitution se fera en Front-End grâce à JavaScript.
+    """
+    # ── Gestion des onglets (Salé / Sucré) ──
+    current_tab = request.GET.get('tab', 'sale')
+    products = FoodProduct.objects.filter(category=current_tab)
+
+    # ── Recherche & Filtres ──
+    query = request.GET.get('q')
+    if query:
+        products = products.filter(name__icontains=query)
+
+    difficulty = request.GET.get('difficulty')
+    if difficulty:
+        products = products.filter(difficulty__iexact=difficulty)
+        
+    calories_max = request.GET.get('calories_max')
+    if calories_max and calories_max.isdigit():
+        products = products.filter(calories__lte=int(calories_max))
+
+    if request.GET.get('favs') == '1':
+        products = products.filter(favorites=request.user)
+
+    # Note : Aucun filtrage d'exclusion de santé ici (contrairement à index)
+    
+    user_favorites = request.user.favorite_products.values_list('id', flat=True)
+
+    return render(request, 'regime.html', {
+        'products': products,
+        'current_tab': current_tab,
+        'query': query or '',
+        'selected_difficulty': difficulty or '',
+        'calories_max': calories_max or '',
+        'total_recipes': FoodProduct.objects.count(),
+        'user_favorites': user_favorites,
+        'is_regime_page': True,  # 👈 Active la substitution JavaScript !
     })
 
 
