@@ -470,6 +470,11 @@
         "{{ c.name|lower|escapejs }}",
       {% endfor %}
     ];
+      
+      const rawRestrictions = "{{ request.user.restrictions|default:''|escapejs }}";
+      if (rawRestrictions) {
+        USER_CONSTRAINTS.push(...rawRestrictions.split(',').map(r => r.trim()));
+      }
 
     const RECIPES = [
       {% for r in products %}
@@ -554,7 +559,23 @@
           replace: '🌱 Version 100% végétale (tofu, tempeh, seitan, protéines de soja texturées, lait végétal, crème végétale, fromage végétal, graines de lin comme liant, agar-agar)', 
           difficulty: 'hard' 
         }
-      ],
+        ],
+        'sans_noix': [
+          { match: ['noix', 'amande', 'almond', 'noisette', 'cacahuète', 'peanut', 'cashew', 'cajou', 'pécan'], replace: 'Graines de tournesol ou de courge', difficulty: 'easy' }
+        ],
+        'sans_alcool': [
+          { match: ['vin', 'wine', 'bière', 'beer', 'rhum', 'rum', 'cognac', 'liqueur'], replace: 'Bouillon aromatisé ou jus de pomme', difficulty: 'easy' }
+        ],
+        'hallal': [
+          { match: ['porc', 'pork', 'lardon', 'bacon', 'chorizo', 'jambon', 'saucisse'], replace: 'Volaille hallal ou viande séchée de boeuf', difficulty: 'easy' },
+          { match: ['vin', 'wine', 'bière', 'beer', 'alcool'], replace: 'Bouillon sans alcool', difficulty: 'easy' }
+        ],
+        'keto': [
+          { match: ['pâtes', 'pasta', 'spaghetti', 'macaroni'], replace: 'Nouilles de courgette (zoodles) ou de konjac', difficulty: 'medium' },
+          { match: ['riz', 'rice'], replace: 'Riz de chou-fleur', difficulty: 'medium' },
+          { match: ['pomme de terre', 'potato', 'patate'], replace: 'Purée de chou-fleur ou de céleri-rave', difficulty: 'medium' },
+          { match: ['farine de blé', 'flour', 'chapelure'], replace: 'Farine d\'amande ou de coco', difficulty: 'easy' }
+        ]
     };
 
     const EN_FR_DICT = {
@@ -587,6 +608,10 @@
           else if (dictKey.includes('hypertension') || dictKey.includes('tension') || dictKey.includes('sel')) dictKey = 'hypertension';
           else if (dictKey.includes('vegetarien') || dictKey.includes('végétarien')) dictKey = 'vegetarien';
           else if (dictKey.includes('vegan') || dictKey.includes('végétalien')) dictKey = 'vegan';
+          else if (dictKey.includes('noix') || dictKey.includes('arachide')) dictKey = 'sans_noix';
+          else if (dictKey.includes('alcool')) dictKey = 'sans_alcool';
+          else if (dictKey.includes('hallal') || dictKey.includes('halal')) dictKey = 'hallal';
+          else if (dictKey.includes('keto') || dictKey.includes('cétogène')) dictKey = 'keto';
 
           (SUBSTITUTIONS[dictKey] || []).forEach(function (rule) {
             if (substituted) return;
