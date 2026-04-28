@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 import random
 
+from .fields import EncryptedTextField
+
 
 class HealthConstraint(models.Model):
     TYPE_DISEASE = 'disease'
@@ -34,9 +36,10 @@ class User(AbstractUser):
     height = models.FloatField(null=True, blank=True)  # taille en cm
     sexe = models.CharField(max_length=10, choices=[('M', 'Homme'), ('F', 'Femme'), ('autre', 'Autre')], blank=True)
     
-    restrictions = models.TextField(blank=True)  # restrictions religieuses/allergies
-    aliments_a_eviter = models.TextField(blank=True)  # aliments à éviter
-    activity_level = models.CharField(max_length=20, blank=True, default='modere')
+    restrictions = EncryptedTextField(blank=True)  # restrictions religieuses/allergies
+    aliments_a_eviter = EncryptedTextField(blank=True)  # aliments à éviter
+    health_constraints_snapshot = EncryptedTextField(blank=True)
+    activity_level = models.CharField(max_length=20, blank=True, default='moderate')
     culinary_level = models.CharField(max_length=20, choices=[
         ('debutant', 'Débutant'),
         ('intermediaire', 'Intermédiaire'),

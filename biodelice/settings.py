@@ -97,6 +97,9 @@ AUTH_PASSWORD_VALIDATORS = [
         }
     },
     {
+        'NAME': 'accounts.validators.StrongPasswordValidator',
+    },
+    {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
     },
     {

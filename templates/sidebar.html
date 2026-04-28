@@ -153,16 +153,16 @@
   </style>
 
   <a class="brand" href="{% url 'recipes:index' %}">Bio<span>delice</span></a>
-  <div class="sidebar-subtitle">Cuisine, adaptation et organisation au meme endroit</div>
+  <div class="sidebar-subtitle">Cuisine, adaptation et organisation au même endroit</div>
 
   <nav class="nav-stack">
     <a class="nav-link {% if request.resolver_match.url_name == 'index' or request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'recipes:index' %}">
       <span class="nav-icon">⌂</span>
-      <span>Recommande</span>
+      <span>Home</span>
     </a>
     <a class="nav-link {% if request.resolver_match.url_name == 'regime' %}active{% endif %}" href="{% url 'recipes:regime' %}">
       <span class="nav-icon">◌</span>
-      <span>Regime adapte</span>
+      <span>Régime adapté</span>
     </a>
     <a class="nav-link {% if request.resolver_match.url_name == 'planner' %}active{% endif %}" href="{% url 'recipes:planner' %}">
       <span class="nav-icon">☷</span>

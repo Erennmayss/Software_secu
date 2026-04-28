@@ -10,20 +10,33 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='user',
-            name='activity_level',
-            field=models.CharField(
-                blank=True,
-                choices=[
-                    ('sedentary', 'Sedentaire'),
-                    ('light', 'Legere'),
-                    ('moderate', 'Moderee'),
-                    ('active', 'Active'),
-                    ('very_active', 'Tres active'),
-                ],
-                default='moderate',
-                max_length=20,
-            ),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[
+                migrations.RunSQL(
+                    sql="""
+                    ALTER TABLE accounts_user
+                    ADD COLUMN IF NOT EXISTS activity_level varchar(20) NOT NULL DEFAULT 'moderate';
+                    """,
+                    reverse_sql=migrations.RunSQL.noop,
+                ),
+            ],
+            state_operations=[
+                migrations.AddField(
+                    model_name='user',
+                    name='activity_level',
+                    field=models.CharField(
+                        blank=True,
+                        choices=[
+                            ('sedentary', 'Sedentaire'),
+                            ('light', 'Legere'),
+                            ('moderate', 'Moderee'),
+                            ('active', 'Active'),
+                            ('very_active', 'Tres active'),
+                        ],
+                        default='moderate',
+                        max_length=20,
+                    ),
+                ),
+            ],
         ),
     ]

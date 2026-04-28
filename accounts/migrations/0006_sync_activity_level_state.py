@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
                 migrations.RunSQL(
                     sql="""
                     ALTER TABLE accounts_user
-                    ADD COLUMN IF NOT EXISTS activity_level varchar(20) NOT NULL DEFAULT 'modere';
+                    ADD COLUMN IF NOT EXISTS activity_level varchar(20) NOT NULL DEFAULT 'moderate';
                     """,
                     reverse_sql="""
                     ALTER TABLE accounts_user
@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
                 migrations.AddField(
                     model_name='user',
                     name='activity_level',
-                    field=models.CharField(blank=True, default='modere', max_length=20),
+                    field=models.CharField(blank=True, default='moderate', max_length=20),
                 ),
             ],
         ),

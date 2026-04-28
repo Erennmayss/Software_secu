@@ -145,11 +145,11 @@
       {% csrf_token %}
       
       {% if form.errors %}
-        <p style="color: #e05c5c; font-size: 0.8rem; text-align: center; margin-bottom: 15px;">Identifiants incorrects.</p>
+        <p style="color: #e05c5c; font-size: 0.8rem; text-align: center; margin-bottom: 15px;">{{ form.non_field_errors.0|default:"Email, identifiant ou mot de passe incorrect." }}</p>
       {% endif %}
 
-      <label for="username">Nom d'utilisateur</label>
-      <input type="text" id="username" name="username" placeholder="Votre adresse e-mail" required/>
+      <label for="username">Email ou identifiant</label>
+      <input type="text" id="username" name="username" placeholder="Votre adresse e-mail ou admin" required/>
 
       <label for="password">Mot de passe</label>
       <input type="password" id="password" name="password" placeholder="Votre mot de passe" required/>

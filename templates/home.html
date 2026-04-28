@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
-{% block page_title %}Recommandé{% endblock %}
-{% block header_title %}Recommandé{% endblock %}
-{% block page_sub %}Retrouve l’ancienne logique de recommandation avec une présentation plus claire.{% endblock %}
+{% block page_title %}Home{% endblock %}
+{% block header_title %}Home{% endblock %}
+{% block page_sub %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -304,7 +304,7 @@
 <section class="hero-strip">
   <div class="panel hero-main">
     <h2>Recettes recommandées</h2>
-    <p>On garde la logique d’origine: filtres serveur par santé, calories, difficulté et favoris, avec une présentation plus légère.</p>
+    <p>Filtres par santé, calories, difficulté et favoris.</p>
   </div>
   <div class="panel hero-stat"><span class="subtle">Total recettes</span><strong>{{ total_recipes }}</strong></div>
   <div class="panel hero-stat"><span class="subtle">Salé</span><strong>{{ total_sale }}</strong></div>
@@ -395,10 +395,38 @@
     </div>
   </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
 <script>
+  function showToast(message) {
+    let toast = document.querySelector('.toast-message');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.className = 'toast-message';
+      toast.style.cssText = `
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #22313d;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 40px;
+        font-size: 0.85rem;
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.3s;
+        pointer-events: none;
+      `;
+      document.body.appendChild(toast);
+    }
+    
+    toast.textContent = message;
+    toast.style.opacity = '1';
+    setTimeout(() => {
+      toast.style.opacity = '0';
+    }, 2000);
+  }
+
   function openDetail(card) {
     document.getElementById('detailImg').src = card.dataset.image;
     document.getElementById('detailTitle').textContent = card.dataset.name;
@@ -416,7 +444,7 @@
   }
 
   function closeDetail(event) {
-    if (event.target.id === 'detailOverlay') {
+    if (event.target.id === 'detailOverlay' || event.target.classList?.contains('panel-close')) {
       document.getElementById('detailOverlay').classList.remove('open');
       document.body.style.overflow = '';
     }
@@ -424,18 +452,37 @@
 
   async function toggleFavorite(event, productId, btn) {
     event.stopPropagation();
-    const response = await fetch(`/recipes/favorite/${productId}/`, {
-      method: 'POST',
-      headers: { 'X-CSRFToken': '{{ csrf_token }}' }
-    });
-    const data = await response.json();
-    if (data.status === 'added') {
-      btn.classList.add('active');
-      showToast('Ajouté aux favoris');
-    } else if (data.status === 'removed') {
-      btn.classList.remove('active');
-      showToast('Retiré des favoris');
+    try {
+      const response = await fetch(`/recipes/favorite/${productId}/`, {
+        method: 'POST',
+        headers: { 
+          'X-CSRFToken': '{{ csrf_token }}',
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await response.json();
+      if (data.status === 'added') {
+        btn.classList.add('active');
+        showToast('Ajouté aux favoris');
+      } else if (data.status === 'removed') {
+        btn.classList.remove('active');
+        showToast('Retiré des favoris');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      showToast('Une erreur est survenue');
     }
   }
+
+  // Close detail with ESC key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      const overlay = document.getElementById('detailOverlay');
+      if (overlay.classList.contains('open')) {
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+    }
+  });
 </script>
 {% endblock %}

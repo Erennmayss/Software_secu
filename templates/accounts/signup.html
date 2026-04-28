@@ -232,10 +232,13 @@
         <div class="field">
           <label for="password">Password</label>
           <input type="password" id="password" name="password1" placeholder="••••••••" required/>
+          {% if form.password1.errors %}<span style="color:#e05c5c; font-size:0.7rem;">{{ form.password1.errors.0 }}</span>{% endif %}
+          <span style="color:#666; font-size:0.7rem;">8 caracteres minimum, 1 majuscule, 1 chiffre, 1 caractere special.</span>
         </div>
         <div class="field">
           <label for="confirm">Confirm Password</label>
           <input type="password" id="confirm" name="password2" placeholder="••••••••" required/>
+          {% if form.password2.errors %}<span style="color:#e05c5c; font-size:0.7rem;">{{ form.password2.errors.0 }}</span>{% endif %}
         </div>
       </div>
 
