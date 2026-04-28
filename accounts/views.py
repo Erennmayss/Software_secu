@@ -173,32 +173,41 @@ def onboarding_view(request):
 def save_onboarding(request):
     if request.method == 'POST':
         user = request.user
-        
+
         # Étape 1
         user.age = request.POST.get('age')
         user.weight = request.POST.get('weight')
         user.height = request.POST.get('height')
         user.sexe = request.POST.get('sexe')
-        
-        # Étape 2
-        user.restrictions = request.POST.get('restrictions', '')
-        
+
+        # Récupérer les données des étapes 2 et 4
+        restrictions_from_step2 = set(r.strip() for r in request.POST.get('restrictions', '').split(',') if r.strip())
+        maladies_from_step4 = set(m.strip() for m in request.POST.get('maladies', '').split(',') if m.strip())
+
+        # Consolider les restrictions pour la cohérence
+        # Si une maladie/régime de l'étape 4 a une restriction équivalente, on l'ajoute
+        if 'vegan' in maladies_from_step4:
+            restrictions_from_step2.add('vegan')
+        if 'vegetarien' in maladies_from_step4:
+            restrictions_from_step2.add('vegetarien')
+        if 'celiaque' in maladies_from_step4:
+            restrictions_from_step2.add('sans_gluten')
+
+        user.restrictions = ','.join(sorted(list(restrictions_from_step2)))
+
         # Étape 3
         user.aliments_a_eviter = request.POST.get('aliments_a_eviter', '')
-        
+
         # Étape 4 - Maladies (liaison avec HealthConstraint)
-        maladies = request.POST.get('maladies', '').split(',')
         user.health_constraints.clear()
-        for maladie in maladies:
-            if maladie:
-                obj, _ = HealthConstraint.objects.get_or_create(name=maladie)
-                user.health_constraints.add(obj)
-        
+        for maladie_name in maladies_from_step4:
+            obj, _ = HealthConstraint.objects.get_or_create(name=maladie_name)
+            user.health_constraints.add(obj)
+
         # Étape 5
         user.culinary_level = request.POST.get('culinary_level', '')
-        
+
         user.save()
-        
         return JsonResponse({'success': True})
-    
+
     return JsonResponse({'success': False, 'error': 'Invalid method'}, status=400)
