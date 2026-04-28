@@ -65,7 +65,37 @@ def update_profile(request):
     if action == 'profile':
         form = ProfileForm(data, instance=request.user)
         if form.is_valid():
-            form.save()
+            user = form.save(commit=False)
+            
+            # Récupérer les nouveaux champs du profil physique et des préférences
+            user.age = data.get('age', user.age)
+            user.weight = data.get('weight', user.weight)
+            user.height = data.get('height', user.height)
+            user.sexe = data.get('sexe', user.sexe)
+            user.culinary_level = data.get('culinary_level', user.culinary_level)
+            user.aliments_a_eviter = data.get('aliments_a_eviter', user.aliments_a_eviter)
+            
+            # Consolider les restrictions si elles sont modifiées
+            if 'restrictions' in data and 'maladies' in data:
+                restrictions_from_step2 = set(r.strip() for r in data['restrictions'].split(',') if r.strip())
+                maladies_from_step4 = set(m.strip() for m in data['maladies'].split(',') if m.strip())
+                
+                if 'vegan' in maladies_from_step4: restrictions_from_step2.add('vegan')
+                if 'vegetarien' in maladies_from_step4: restrictions_from_step2.add('vegetarien')
+                if 'celiaque' in maladies_from_step4: restrictions_from_step2.add('sans_gluten')
+                
+                user.restrictions = ','.join(sorted(list(restrictions_from_step2)))
+            
+            user.save()
+            
+            # Mettre à jour les maladies (relation ManyToMany)
+            if 'maladies' in data:
+                maladies_from_step4 = set(m.strip() for m in data['maladies'].split(',') if m.strip())
+                user.health_constraints.clear()
+                for maladie_name in maladies_from_step4:
+                    obj, _ = HealthConstraint.objects.get_or_create(name=maladie_name)
+                    user.health_constraints.add(obj)
+
             return JsonResponse({
                 'success': True,
                 'full_name': request.user.full_name,
