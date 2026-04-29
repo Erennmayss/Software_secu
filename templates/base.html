@@ -352,8 +352,7 @@
           </div>
           <div class="profile-box">
             <div class="profile-meta">
-              <strong>{{ request.user.full_name|default:request.user.email }}</strong>
-              <span>{{ request.user.email }}</span>
+              <strong>{{ request.user.ail }}</span>
             </div>
             <button class="avatar-btn" id="profileToggle" type="button">
               {% if request.user.avatar %}

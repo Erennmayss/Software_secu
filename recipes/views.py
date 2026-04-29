@@ -10,9 +10,7 @@ from .models import FridgeIngredient, MealPlan
 from .services import (
     DAY_ORDER,
     build_fridge_match,
-    get_user_constraint_keys,
     parse_week_start,
-    recipe_matches_constraints,
 )
 
 
@@ -47,15 +45,13 @@ def _filter_products_for_user(request, current_tab):
     if request.GET.get('favs') == '1':
         products = products.filter(favorites=request.user)
 
-    constraint_keys = get_user_constraint_keys(request.user)
     fridge_ingredients = list(
         request.user.fridge_ingredients.values_list('normalized_name', flat=True)
     )
 
     filtered = []
     for product in products:
-        adaptation = recipe_matches_constraints(product, constraint_keys)
-        if adaptation.allowed:
+            # On ne jette plus les recettes, on laisse le frontend gérer les substitutions !
             product.fridge_match_count = build_fridge_match(product, fridge_ingredients)
             filtered.append(product)
 

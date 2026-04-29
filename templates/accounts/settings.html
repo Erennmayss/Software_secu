@@ -156,6 +156,7 @@
 {% endblock %}
 
 {% block content %}
+<div style="display:none;">{% csrf_token %}</div>
 <div class="settings-wrapper">
   
   <!-- SECTION 0 : Profil de base -->
@@ -384,9 +385,10 @@
   // --- API HELPER ---
   async function sendUpdate(payload, successMsg, errorMsg) {
     try {
-      const response = await fetch('/accounts/update_profile/', {
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}';
+      const response = await fetch('{% url "accounts:update_profile" %}', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
         body: JSON.stringify(payload)
       });
       const data = await response.json();
@@ -395,7 +397,10 @@
         window.showToast(successMsg);
         return true;
       } else {
-        window.showToast(data.error === 'old_password' ? "L'ancien mot de passe est incorrect." : errorMsg);
+        let msg = errorMsg;
+        if (data.error === 'old_password') msg = "L'ancien mot de passe est incorrect.";
+        else if (data.errors && data.errors.email) msg = data.errors.email[0];
+        window.showToast(msg);
         return false;
       }
     } catch (error) {
@@ -406,8 +411,8 @@
 
   // --- INITIAL DATA & STATE ---
   let selectedSexe = '{{ request.user.sexe|default:""|escapejs }}';
-  let selectedRestrictions = new Set("{{ request.user.restrictions|default:'' }}".split(',').map(s => s.trim()).filter(Boolean));
-  let alimentsSet = new Set("{{ request.user.aliments_a_eviter|default:'' }}".split(',').map(s => s.trim()).filter(Boolean));
+  let selectedRestrictions = new Set("{{ request.user.restrictions|default:''|escapejs }}".split(',').map(s => s.trim()).filter(Boolean));
+  let alimentsSet = new Set("{{ request.user.aliments_a_eviter|default:''|escapejs }}".split(',').map(s => s.trim()).filter(Boolean));
   let selectedDiseases = new Set([
     {% for c in request.user.health_constraints.all %}"{{ c.name|escapejs }}",{% endfor %}
   ]);

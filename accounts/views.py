@@ -28,14 +28,23 @@ def signup_view(request):
 # ── Connexion ────────────────────────────────────────────
 def login_view(request):
     if request.user.is_authenticated:
-        return redirect('recipes:index')
+        if request.user.is_superuser or request.user.is_staff:
+            return redirect('backoffice:admin_dashboard')
+        else:
+            return redirect('recipes:index')
 
     form = LoginForm(request, data=request.POST or None)
     if request.method == 'POST' and form.is_valid():
         user = form.get_user()
         login(request, user)
-        next_url = request.GET.get('next', 'recipes:index')
-        return redirect(next_url)
+        
+        next_url = request.GET.get('next')
+        if next_url:
+            return redirect(next_url)
+        elif user.is_superuser or user.is_staff:
+            return redirect('backoffice:admin_dashboard')
+        else:
+            return redirect('recipes:index')
 
     return render(request, 'accounts/login.html', {'form': form})
 
@@ -68,10 +77,14 @@ def update_profile(request):
             user = form.save(commit=False)
             
             # Récupérer les nouveaux champs du profil physique et des préférences
-            user.age = data.get('age', user.age)
-            user.weight = data.get('weight', user.weight)
-            user.height = data.get('height', user.height)
-            user.sexe = data.get('sexe', user.sexe)
+            try:
+                user.age = int(data.get('age')) if data.get('age') else None
+                user.weight = float(str(data.get('weight')).replace(',', '.')) if data.get('weight') else None
+                user.height = float(str(data.get('height')).replace(',', '.')) if data.get('height') else None
+            except (ValueError, TypeError):
+                pass # On ignore si la conversion échoue
+                
+            user.sexe = data.get('sexe') or ""
             user.culinary_level = data.get('culinary_level', user.culinary_level)
             user.aliments_a_eviter = data.get('aliments_a_eviter', user.aliments_a_eviter)
             
@@ -98,7 +111,7 @@ def update_profile(request):
 
             return JsonResponse({
                 'success': True,
-                'full_name': request.user.full_name,
+                'full_name': request.user.get_full_name(),
                 'email': request.user.email,
             })
         return JsonResponse({'success': False, 'errors': form.errors}, status=400)
@@ -126,7 +139,7 @@ def profile_data(request):
         'first_name': u.first_name,
         'last_name':  u.last_name,
         'email':      u.email,
-        'full_name':  u.full_name,
+        'full_name':  u.get_full_name(),
     })
 
 
@@ -205,10 +218,14 @@ def save_onboarding(request):
         user = request.user
 
         # Étape 1
-        user.age = request.POST.get('age')
-        user.weight = request.POST.get('weight')
-        user.height = request.POST.get('height')
-        user.sexe = request.POST.get('sexe')
+        try:
+            user.age = int(request.POST.get('age')) if request.POST.get('age') else None
+            user.weight = float(str(request.POST.get('weight')).replace(',', '.')) if request.POST.get('weight') else None
+            user.height = float(str(request.POST.get('height')).replace(',', '.')) if request.POST.get('height') else None
+        except (ValueError, TypeError):
+            pass
+            
+        user.sexe = request.POST.get('sexe') or ""
 
         # Récupérer les données des étapes 2 et 4
         restrictions_from_step2 = set(r.strip() for r in request.POST.get('restrictions', '').split(',') if r.strip())

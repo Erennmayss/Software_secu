@@ -467,13 +467,13 @@
   document.addEventListener('DOMContentLoaded', function () {
     const USER_CONSTRAINTS = [
       {% for c in request.user.health_constraints.all %}
-        "{{ c.name|lower|escapejs }}",
+        "{{ c.name|lower|escapejs }}".trim(),
       {% endfor %}
     ];
       
       const rawRestrictions = "{{ request.user.restrictions|default:''|escapejs }}";
       if (rawRestrictions) {
-        USER_CONSTRAINTS.push(...rawRestrictions.split(',').map(r => r.trim()));
+        USER_CONSTRAINTS.push(...rawRestrictions.split(',').map(r => r.trim()).filter(Boolean));
       }
 
     const RECIPES = [
@@ -505,7 +505,7 @@
         { match: ['crème fraîche', 'crème liquide', 'cream'], replace: 'Crème de coco ou de soja', difficulty: 'easy' },
         { match: ['fromage', 'parmesan', 'cheddar', 'mozzarella', 'cheese'], replace: 'Fauxmage à la cajou', difficulty: 'medium' }
       ],
-      'diabète': [
+      diabete: [
         { match: ['sucre vanillé', 'vanilla sugar'], replace: 'Extrait de vanille sans sucre', difficulty: 'easy' },
         { match: ['sucre glace', 'powdered sugar'], replace: 'Érythritol mixé en poudre fine', difficulty: 'easy' },
         { match: ['sucre', 'sucre blanc', 'sucre roux', 'sugar'], replace: 'Érythritol ou stévia', difficulty: 'easy' },
@@ -601,9 +601,9 @@
 
         constraints.forEach(function (constraint) {
           if (substituted) return;
-          let dictKey = constraint.toLowerCase();
-          if (dictKey.includes('cœliaque') || dictKey.includes('coeliaque') || dictKey.includes('ceoliaque') || dictKey.includes('gluten')) dictKey = 'gluten';
-          else if (dictKey.includes('diabete') || dictKey.includes('diabète')) dictKey = 'diabète';
+          let dictKey = constraint.toLowerCase().trim();
+          if (dictKey.includes('cœliaque') || dictKey.includes('coeliaque') || dictKey.includes('ceoliaque') || dictKey.includes('celiaque') || dictKey.includes('gluten')) dictKey = 'gluten';
+          else if (dictKey.includes('diabete') || dictKey.includes('diabète')) dictKey = 'diabete';
           else if (dictKey.includes('lait') || dictKey.includes('lactose')) dictKey = 'lactose';
           else if (dictKey.includes('hypertension') || dictKey.includes('tension') || dictKey.includes('sel')) dictKey = 'hypertension';
           else if (dictKey.includes('vegetarien') || dictKey.includes('végétarien')) dictKey = 'vegetarien';

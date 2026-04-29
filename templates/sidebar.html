@@ -174,12 +174,40 @@
     </a>
   </nav>
 
-  <div class="health-box">
+  <div class="health-box" id="sidebarHealthBox">
     <h4>Contraintes actives</h4>
     {% for c in request.user.health_constraints.all %}
       <span class="health-pill">{{ c.name|title }}</span>
-    {% empty %}
-      <span class="health-pill">Aucune</span>
     {% endfor %}
   </div>
 </aside>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const box = document.getElementById('sidebarHealthBox');
+    if (!box) return;
+    
+    const restrictionsStr = "{{ request.user.restrictions|default:''|escapejs }}";
+    
+    if (restrictionsStr) {
+      restrictionsStr.split(',').forEach(r => {
+        r = r.trim();
+        if (r && r !== 'aucune') {
+          const span = document.createElement('span');
+          span.className = 'health-pill';
+          // Convertit "sans_gluten" en "Sans gluten"
+          span.textContent = r.replace(/_/g, ' ').replace(/^./, l => l.toUpperCase());
+          box.appendChild(span);
+        }
+      });
+    }
+    
+    // Si aucune contrainte n'est active, on affiche "Aucune"
+    if (box.querySelectorAll('.health-pill').length === 0) {
+      const span = document.createElement('span');
+      span.className = 'health-pill';
+      span.textContent = 'Aucune';
+      box.appendChild(span);
+    }
+  });
+</script>
