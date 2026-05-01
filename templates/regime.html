@@ -519,47 +519,70 @@
         { match: ['boeuf', 'beef', 'porc', 'pork', 'poulet', 'chicken', 'veau', 'veal', 'agneau', 'lamb', 'poisson', 'fish', 'saumon', 'thon', 'crevette', 'shrimp'], 
           replace: 'Option végétarienne (tofu, seitan, tempeh, légumineuses, protéines de pois)', difficulty: 'medium' }
       ],
-      'vegan': [
-        { 
-          match: [
-            // VIANDES (liste complète)
-            'boeuf', 'beef', 'bœuf', 'steak', 'steak haché', 'entrecôte', 'rumsteck', 'faux-filet',
-            'porc', 'pork', 'cochon', 'côte de porc', 'filet mignon', 'travers de porc', 'rouelle',
-            'poulet', 'chicken', 'poulet fermier', 'supreme de poulet', 'aile de poulet', 'escalope',
-            'dinde', 'turkey', 'escalope de dinde',
-            'veau', 'veal', 'blanquette', 'parillade',
-            'agneau', 'lamb', 'gigot', 'côte d\'agneau', 'navarin',
-            'canard', 'duck', 'magret', 'confit',
-            'lapin', 'rabbit',
-            'cheval', 'horse',
-            'gibier', 'game',
-            // POISSONS ET FRUITS DE MER (très complet)
-            'poisson', 'fish', 'saumon', 'salmon', 'thon', 'tuna', 'truite', 'trout', 'cabillaud', 'cod',
-            'merlan', 'lieu', 'colin', 'bar', 'loup', 'dorade', 'sea bream', 'rouget', 'maquereau', 'sardine',
-            'anchois', 'anchiovy', 'morue', 'aiglefin', 'haddock', 'sole', 'plie', 'raie', 'requin', 'espadon',
-            'brochet', 'carpe', 'tanche', 'perche', 'sandre', 'omble', 'féra', 'ombre', 'esturgeon', 'caviar',
-            'crevette', 'shrimp', 'gambas', 'langoustine', 'scampi', 'crabe', 'crab', 'araignée de mer',
-            'tourteau', 'homard', 'lobster', 'langouste', 'écrevisse', 'crayfish', 'moule', 'mussel',
-            'huitre', 'oyster', 'coquille saint jacques', 'scallop', 'calamar', 'squid', 'encornet',
-            'seiche', 'cuttlefish', 'poulpe', 'octopus', 'bigorneau', 'bulot', 'whelk', 'palourde', 'clams',
-            'ormeau', 'abalone', 'oursin', 'sea urchin',
-            // PRODUITS LAITIERS
-            'lait', 'milk', 'lait de vache', 'lait entier', 'lait demi-écrémé', 'lait écrémé',
-            'beurre', 'butter', 'crème', 'cream', 'crème fraîche', 'crème liquide', 'crème entière',
-            'fromage', 'cheese', 'parmesan', 'cheddar', 'mozzarella', 'gruyère', 'comté', 'emmental',
-            'camembert', 'brie', 'chèvre', 'goat cheese', 'brebis', 'roquefort', 'bleu', 'fourme',
-            'yaourt', 'yogurt', 'yaourt grec', 'skyr', 'lait ribot', 'kefir', 'lait fermenté',
-            // OEUFS
-            'oeuf', 'egg', 'oeufs', 'eggs', 'blanc d\'oeuf', 'egg white', 'jaune d\'oeuf', 'egg yolk',
-            // MIEL
-            'miel', 'honey', 'gelée royale',
-            // GÉLATINE
-            'gélatine', 'gelatin', 'gélatine animale'
-          ], 
-          replace: '🌱 Version 100% végétale (tofu, tempeh, seitan, protéines de soja texturées, lait végétal, crème végétale, fromage végétal, graines de lin comme liant, agar-agar)', 
-          difficulty: 'hard' 
-        }
-        ],
+      vegan: [
+  // VIANDE
+  {
+    match: ['boeuf', 'beef', 'poulet', 'chicken', 'agneau', 'lamb'],
+    replace: 'Tofu ferme, tempeh ou protéines de soja texturées',
+    difficulty: 'medium'
+  },
+
+  // POISSON
+  {
+    match: ['poisson', 'fish', 'saumon', 'thon'],
+    replace: 'Tofu mariné ou alternative végétale au poisson',
+    difficulty: 'medium'
+  },
+
+  // LAIT
+  {
+    match: ['lait', 'milk'],
+    replace: 'Lait végétal (amande, soja, avoine)',
+    difficulty: 'easy'
+  },
+
+  // BEURRE
+  {
+    match: ['beurre', 'butter'],
+    replace: 'Margarine végétale ou huile d’olive',
+    difficulty: 'easy'
+  },
+
+  // CRÈME
+  {
+    match: ['crème', 'cream'],
+    replace: 'Crème végétale (soja, coco, avoine)',
+    difficulty: 'easy'
+  },
+
+  // FROMAGE
+  {
+    match: ['fromage', 'cheese'],
+    replace: 'Fromage végétal ou levure nutritionnelle',
+    difficulty: 'medium'
+  },
+
+  // OEUFS
+  {
+    match: ['oeuf', 'egg'],
+    replace: 'Graines de lin ou de chia (liant) ou tofu soyeux',
+    difficulty: 'medium'
+  },
+
+  // MIEL
+  {
+    match: ['miel', 'honey'],
+    replace: 'Sirop d’érable ou sirop d’agave',
+    difficulty: 'easy'
+  },
+
+  // GÉLATINE
+  {
+    match: ['gélatine', 'gelatin'],
+    replace: 'Agar-agar',
+    difficulty: 'easy'
+  }
+],
         'sans_noix': [
           { match: ['noix', 'amande', 'almond', 'noisette', 'cacahuète', 'peanut', 'cashew', 'cajou', 'pécan'], replace: 'Graines de tournesol ou de courge', difficulty: 'easy' }
         ],
