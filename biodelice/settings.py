@@ -18,8 +18,11 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-votre-cle-par-defaut-pas-p
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
+# En ligne (production), DEBUG doit être False
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,votre-domaine.com').split(',')
 
 
 # Application definition
@@ -74,11 +77,14 @@ WSGI_APPLICATION = 'biodelice.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'RecSys_db'),
-        'USER': os.getenv('DB_USER', 'aya'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'aya'),
-        'HOST': os.getenv('DB_HOST', '192.168.1.2'),
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
         'PORT': os.getenv('DB_PORT', '5432'),
+        'OPTIONS': {
+            'sslmode': 'require',
+        },
     }
 }
 

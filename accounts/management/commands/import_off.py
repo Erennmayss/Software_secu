@@ -10,7 +10,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         # 👇 TA CLÉ API SPOONACULAR
-        api_key = os.getenv("SPOONACULAR_API_KEY", "e545459e41c3467a9a8a1aa89e0bf334")
+        api_key = os.getenv("SPOONACULAR_API_KEY")
 
         self.stdout.write("🍰 Récupération de délicieuses recettes sucrées (desserts)...")
         
