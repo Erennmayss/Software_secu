@@ -106,7 +106,6 @@ class Command(BaseCommand):
                             'category': category,
                             'ingredients_text': ingredients_text,
                             'image_url': r.get('image', ''),
-                            'nutriscore': 'A',
                             'sugars_100g': round(sugar, 2),
                             'salt_100g': round(salt, 3),
                             'calories': int(calories),

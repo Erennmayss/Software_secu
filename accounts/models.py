@@ -74,19 +74,19 @@ class FoodProduct(models.Model):
     ]
     NUTRISCORE_CHOICES = [(grade, grade) for grade in ['A', 'B', 'C', 'D', 'E']]
 
-    name = models.CharField(max_length=255)
-    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='sale')
+    name = models.CharField(max_length=255, db_index=True)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='sale', db_index=True)
     ingredients_text = models.TextField(blank=True)
     preparation_steps = models.TextField(blank=True)
     allergens_tags = models.TextField(blank=True)
     nutriscore = models.CharField(max_length=1, choices=NUTRISCORE_CHOICES, blank=True)
     sugars_100g = models.FloatField(default=0)
     salt_100g = models.FloatField(default=0)
-    calories = models.IntegerField(default=0)
+    calories = models.IntegerField(default=0, db_index=True)
     proteins = models.FloatField(default=0)
     carbs = models.FloatField(default=0)
     fats = models.FloatField(default=0)
-    difficulty = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, blank=True)
+    difficulty = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, blank=True, db_index=True)
     image_url = models.URLField(blank=True)
     image = models.ImageField(upload_to='recipes/', null=True, blank=True)
     favorites = models.ManyToManyField('User', related_name='favorite_products', blank=True)

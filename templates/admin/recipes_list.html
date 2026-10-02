@@ -52,7 +52,6 @@
             <th>Title</th>
             <th>Category</th>
             <th>Calories</th>
-            <th>Nutriscore</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
@@ -65,7 +64,6 @@
               <td><strong>{{ product.name }}</strong></td>
               <td>{{ product.get_category_display|default:product.category }}</td>
               <td>{{ product.calories }} kcal</td>
-              <td><span class="badge badge-{{ product.nutriscore|lower|default:'c' }}">{{ product.nutriscore|default:"-" }}</span></td>
               <td><span class="badge badge-published">Published</span></td>
               <td>
                 <div class="actions-row">
@@ -81,7 +79,7 @@
             </tr>
           {% empty %}
             <tr>
-              <td colspan="8" class="muted">No recipe matches the current filters.</td>
+              <td colspan="7" class="muted">No recipe matches the current filters.</td>
             </tr>
           {% endfor %}
         </tbody>
@@ -96,7 +94,6 @@
           <div class="recipe-media">
             <img src="{% if product.image %}{{ product.image.url }}{% elif product.image_url %}{{ product.image_url }}{% else %}https://via.placeholder.com/640x360?text=Recipe{% endif %}" alt="{{ product.name }}" />
             <div class="recipe-overlay">
-              <span class="badge badge-{{ product.nutriscore|lower|default:'c' }}">{{ product.nutriscore|default:"-" }}</span>
               <div class="actions-row">
                 <a href="{% url 'backoffice:recipe_update' product.pk %}" class="action-link">View</a>
                 <a href="{% url 'backoffice:recipe_update' product.pk %}" class="action-link">Edit</a>
@@ -120,13 +117,15 @@
 
   <section class="card" style="margin-top:18px;">
     <div class="filters" style="justify-content:space-between;">
-      <span class="muted small">Showing {{ products|length }} recipe{{ products|length|pluralize }}</span>
-      <div class="page-actions">
-        <button class="btn btn-ghost" type="button">Previous</button>
-        <button class="btn btn-soft" type="button">1</button>
-        <button class="btn" type="button">2</button>
-        <button class="btn" type="button">3</button>
-        <button class="btn btn-ghost" type="button">Next</button>
+      <span class="muted small">Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }} ({{ page_obj.paginator.count }} recettes au total)</span>
+      <div class="page-actions" style="display:flex; gap:6px; align-items:center;">
+        {% if page_obj.has_previous %}
+          <a class="btn btn-ghost" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}">Précédent</a>
+        {% endif %}
+        <span class="btn btn-soft">{{ page_obj.number }}</span>
+        {% if page_obj.has_next %}
+          <a class="btn btn-ghost" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}">Suivant</a>
+        {% endif %}
       </div>
     </div>
   </section>

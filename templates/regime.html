@@ -482,7 +482,6 @@
         id: {{ r.id }},
         name: "{{ r.name|escapejs }}",
         img: "{{ r.image_url|default:'https://via.placeholder.com/600x400?text=No+Image' }}",
-        nutriscore: "{{ r.nutriscore|lower|default:'n' }}",
         calories: {{ r.calories }},
         difficulty: "{{ r.difficulty|default:'Facile' }}",
         allergens: "{{ r.allergens_tags|escapejs }}".split(','),
@@ -708,7 +707,6 @@
             <div class="card-img-wrap">
               <img src="${recipe.img}" alt="${recipe.name}">
               <div class="card-top-badges">
-                <span class="nutriscore-badge ns-${recipe.nutriscore}">${recipe.nutriscore.toUpperCase()}</span>
                 <button class="fav-btn ${recipe.fav ? 'active' : ''}" type="button" onclick="toggleFav(event, ${recipe.id}, this)">❤</button>
               </div>
               <div class="adapt-pill ${adaptation.subsCount === 0 ? 'full' : 'partial'}">${adaptLabel}</div>

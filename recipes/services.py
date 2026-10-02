@@ -97,5 +97,7 @@ def recipe_matches_constraints(recipe, constraint_keys: list[str]) -> RecipeAdap
 def build_fridge_match(recipe, fridge_ingredients: list[str]) -> int:
     if not fridge_ingredients:
         return 0
-    ingredient_tokens = normalize_ingredient_tokens(getattr(recipe, 'ingredients_text', ''))
-    return sum(1 for item in fridge_ingredients if any(item in token for token in ingredient_tokens))
+    text = (getattr(recipe, 'ingredients_text', '') or '').lower()
+    if not text:
+        return 0
+    return sum(1 for item in fridge_ingredients if item in text)

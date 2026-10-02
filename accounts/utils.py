@@ -340,7 +340,6 @@ def serialize_regime_recipe(recipe, profile: UserNutritionProfile, toggles: dict
         'calories': recipe.calories,
         'difficulty': getattr(recipe, 'difficulty', ''),
         'normalized_difficulty': recipe_level,
-        'nutriscore': recipe.nutriscore,
         'sugars_100g': recipe.sugars_100g,
         'salt_100g': recipe.salt_100g,
         'ingredients': ingredients,

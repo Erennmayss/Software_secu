@@ -131,7 +131,7 @@ def planner(request):
         'plan_dict': json.dumps(_serialize_plan_queryset(plans)),
         'days': DAY_ORDER,
         'meals': ['petit_dej', 'dejeuner', 'diner'],
-        'all_recipes': FoodProduct.objects.all(),
+        'all_recipes': FoodProduct.objects.only('id', 'name', 'calories', 'category', 'ingredients_text', 'image_url', 'image', 'nutriscore'),
         'current_week_start': week_start.isoformat(),
         'fridge_ingredients_json': json.dumps(fridge_ingredients),
     })

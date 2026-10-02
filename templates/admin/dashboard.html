@@ -132,7 +132,7 @@
             <tr>
               <th>Recipe</th>
               <th>Favorites</th>
-              <th>Adaptation score</th>
+              <th>Calories</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -149,7 +149,7 @@
                 </div>
               </td>
               <td>{{ recipe.favorites_count|default:0 }} ❤</td>
-              <td>{{ recipe.nutriscore|default:"A" }}</td>
+              <td>{{ recipe.calories }} kcal</td>
               <td><span class="badge badge-published">Published</span></td>
             </tr>
             {% empty %}

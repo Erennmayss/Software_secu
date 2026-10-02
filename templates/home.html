@@ -347,7 +347,6 @@
       onclick="openDetail(this)"
       data-name="{{ product.name|escapejs }}"
       data-image="{{ product.image_url|default:'https://via.placeholder.com/800x500?text=Recette' }}"
-      data-nutri="{{ product.nutriscore|lower|default:'n' }}"
       data-ingredients="{{ product.ingredients_text|default:'Non spécifiés.'|escapejs }}"
       data-allergens="{{ product.allergens_tags|default:'Aucun'|escapejs }}"
       data-calories="{{ product.calories }}"
@@ -356,7 +355,6 @@
       <div class="card-media">
         <img src="{{ product.image_url|default:'https://via.placeholder.com/800x500?text=Recette' }}" alt="{{ product.name }}">
         <div class="badge-row">
-          <span class="nutri {{ product.nutriscore|lower|default:'n' }}">{{ product.nutriscore|upper|default:'N' }}</span>
           <button class="fav-btn {% if product.id in user_favorites %}active{% endif %}" type="button" onclick="toggleFavorite(event, {{ product.id }}, this)">❤</button>
         </div>
       </div>
@@ -430,7 +428,7 @@
   function openDetail(card) {
     document.getElementById('detailImg').src = card.dataset.image;
     document.getElementById('detailTitle').textContent = card.dataset.name;
-    document.getElementById('detailMeta').textContent = `Nutriscore ${card.dataset.nutri.toUpperCase()} • ${card.dataset.calories} kcal • ${card.dataset.difficulty}`;
+    document.getElementById('detailMeta').textContent = `${card.dataset.calories} kcal • ${card.dataset.difficulty}`;
     document.getElementById('detailIngredients').innerHTML = card.dataset.ingredients
       .split(',')
       .map(item => `<div class="detail-copy">${item.trim()}</div>`)

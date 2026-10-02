@@ -18,7 +18,6 @@ class FoodProductForm(forms.ModelForm):
             'name',
             'category',
             'calories',
-            'nutriscore',
             'proteins',
             'carbs',
             'fats',
@@ -38,7 +37,7 @@ class FoodProductForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        select_fields = {'category', 'difficulty', 'nutriscore'}
+        select_fields = {'category', 'difficulty'}
         for name, field in self.fields.items():
             if name == 'image_upload':
                 field.widget.attrs.update({'class': 'control'})

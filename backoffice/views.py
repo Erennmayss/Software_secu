@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Count
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
@@ -20,38 +21,49 @@ def _base_context(active_page):
 
 @staff_required
 def admin_dashboard(request):
-    total_users = User.objects.count()
-    total_recipes = FoodProduct.objects.count()
-    top_recipes = FoodProduct.objects.annotate(favorites_count=Count('favorites')).order_by('-favorites_count', '-id')[:5]
-    recent_recipes = FoodProduct.objects.order_by('-id')[:5]
+    from django.core.cache import cache
 
-    rules_with_user_counts = SubstitutionRule.objects.select_related('target_constraint').annotate(
-        affected_users=Count('target_constraint__user', distinct=True)
-    )
-    daily_subs = sum(rule.affected_users for rule in rules_with_user_counts)
+    cache_key = 'admin_dashboard_metrics'
+    context_data = cache.get(cache_key)
 
-    constraint_counts = HealthConstraint.objects.annotate(user_count=Count('user', distinct=True)).order_by('-user_count', 'name')
-    constraint_distribution = []
-    for constraint in constraint_counts:
-        percentage = round((constraint.user_count / total_users) * 100, 1) if total_users else 0
-        constraint_distribution.append({
-            'name': constraint.name,
-            'percentage': percentage,
-            'user_count': constraint.user_count,
-            'color': constraint.color,
-            'icon': constraint.icon,
-        })
+    if not context_data:
+        total_users = User.objects.count()
+        total_recipes = FoodProduct.objects.count()
+        top_recipes = list(FoodProduct.objects.annotate(favorites_count=Count('favorites')).order_by('-favorites_count', '-id')[:5])
+        recent_recipes = list(FoodProduct.objects.order_by('-id')[:5])
+
+        rules_with_user_counts = SubstitutionRule.objects.select_related('target_constraint').annotate(
+            affected_users=Count('target_constraint__user', distinct=True)
+        )
+        daily_subs = sum(rule.affected_users for rule in rules_with_user_counts)
+
+        constraint_counts = HealthConstraint.objects.annotate(user_count=Count('user', distinct=True)).order_by('-user_count', 'name')
+        constraint_distribution = []
+        for constraint in constraint_counts:
+            percentage = round((constraint.user_count / total_users) * 100, 1) if total_users else 0
+            constraint_distribution.append({
+                'name': constraint.name,
+                'percentage': percentage,
+                'user_count': constraint.user_count,
+                'color': constraint.color,
+                'icon': constraint.icon,
+            })
+
+        context_data = {
+            'total_users': total_users,
+            'total_recipes': total_recipes,
+            'daily_subs': daily_subs,
+            'active_users': User.objects.filter(last_login__isnull=False).count(),
+            'favorite_recipes': FoodProduct.objects.aggregate(total=Count('favorites'))['total'] or 0,
+            'recent_recipes': recent_recipes,
+            'top_recipes': top_recipes,
+            'constraint_distribution': constraint_distribution,
+        }
+        cache.set(cache_key, context_data, 300)
 
     context = {
         **_base_context('dashboard'),
-        'total_users': total_users,
-        'total_recipes': total_recipes,
-        'daily_subs': daily_subs,
-        'active_users': User.objects.filter(last_login__isnull=False).count(),
-        'favorite_recipes': FoodProduct.objects.aggregate(total=Count('favorites'))['total'] or 0,
-        'recent_recipes': recent_recipes,
-        'top_recipes': top_recipes,
-        'constraint_distribution': constraint_distribution,
+        **context_data,
     }
     return render(request, 'admin/dashboard.html', context)
 
@@ -79,9 +91,14 @@ def recipe_list(request):
     if category_filter:
         products = products.filter(category=category_filter)
 
+    paginator = Paginator(products, 25)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
     context = {
         **_base_context('recipes'),
-        'products': products,
+        'products': page_obj,
+        'page_obj': page_obj,
         'search_query': search_query,
         'category_filter': category_filter,
         'category_choices': FoodProduct.CATEGORY_CHOICES,

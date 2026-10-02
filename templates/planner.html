@@ -1,4 +1,4 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 
 {% block page_title %}Meal Planner{% endblock %}
 {% block header_title %}Planificateur de repas{% endblock %}
@@ -805,7 +805,6 @@
         data-name="{{ product.name|escapejs }}"
         data-cal="{{ product.calories }}"
         data-img="{{ product.image_url|default:'' }}"
-        data-ns="{{ product.nutriscore|lower|default:'n' }}"
         data-cat="{{ product.category }}"
         data-ingredients="{{ product.ingredients_text|lower|default:''|escapejs }}"
         id="drag-{{ product.id }}">
@@ -814,7 +813,6 @@
           <div class="drag-name">{{ product.name }}</div>
           <div class="drag-meta">
             <span class="drag-cal">🔥 {{ product.calories }} kcal</span>
-            <span class="drag-ns ns-{{ product.nutriscore|lower|default:'n' }}">{{ product.nutriscore|upper|default:'?' }}</span>
           </div>
         </div>
       </div>
