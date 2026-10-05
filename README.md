@@ -1,159 +1,349 @@
-# 🥗 Biodélice — Plateforme de Recommandation et Planification Alimentaire Intelligente
+# BioDelice
 
-**Biodélice** est une application web conçue avec **Django** et **PostgreSQL (Supabase)** permettant d'offrir des recommandations nutritionnelles et culinaires sur-mesure. L'application prend en compte les contraintes de santé des utilisateurs (diabète, hypertension, allergies, cœliaque), leurs régimes spécifiques (végétalien, végétarien) ainsi que les ingrédients disponibles dans leur frigo.
+## Personalized Food Recommendation Platform
 
----
+BioDelice est une application web développée avec Django, destinée aux personnes ayant des allergies, intolérances ou contraintes alimentaires.
 
-## 🚀 Fonctionnalités Principales
+L'application permet de prendre en compte le profil et les contraintes alimentaires de chaque utilisateur afin de proposer des aliments et des repas plus adaptés à ses besoins.
 
-### 👤 Profil & Onboarding Personnalisé
-* **Informations Physiques & Nutritionnelles** : Âge, poids, taille, sexe, niveau d'activité et calcul automatique du besoin calorique journalier (BMR).
-* **Profil de Santé Chiffré** : Enregistrement sécurisé des allergies, régimes et maladies via des champs chiffrés (`EncryptedTextField`).
-* **Niveau Culinaire** : Adaptation de la difficulté des recettes au profil de l'utilisateur (Débutant, Intermédiaire, Avancé).
-
-### 🍲 Catalogue & Recommandations Intelligentes
-* **Catalogue dynamique** : Recherche textuelle, filtres par catégorie (*Salé, Sucré, Healthy, Vegan*), niveau de difficulté et apport calorique maximum.
-* **Algorithme d'Adaptation Santé** : Vérification dynamique des recettes selon les seuils tolérés (ex: taux de sucre pour diabète, taux de sel pour hypertension, mots-clés d'exclus).
-* **Gestion des Favoris** : Ajout/suppression rapide en coup de cœur.
-
-### 📅 Planning de Repas Hebdomadaire (Planner)
-* **Planification dynamique** : Organisation des repas par jour (Lundi au Dimanche) et par type (Petit-déjeuner, Déjeuner, Dîner).
-* **Interface fluide** : Choix des recettes depuis un volet latéral et synchronisation instantanée avec la base de données.
-
-### 🥗 Frigo Virtuel ("Ce que j'ai au frigo")
-* **Match Ingrédients ↔ Recettes** : Calcul automatique des correspondances entre les ingrédients disponibles et les recettes du catalogue.
-* **Gestion en temps réel** : Ajout, normalisation et suppression d'ingrédients via une API REST interne.
-
-### 🛠 Administration & Backoffice
-* **Django Admin complet (`/admin/`)** : Gestion administrateur de tous les modèles (`User`, `FoodProduct`, `HealthConstraint`, `MealPlan`, `FridgeIngredient`, `SubstitutionRule`, `PasswordResetCode`).
-* **Dashboard Custom Backoffice (`/backoffice/`)** : Statistiques globales (utilisateurs actifs, répartition des contraintes de santé, recettes populaires) mises en cache et liste paginée des produits.
+Les besoins pris en compte peuvent notamment concerner le diabète, la maladie cœliaque, les allergies alimentaires et différentes restrictions alimentaires.
 
 ---
 
-## 🛠️ Stack Technique
+## Application en ligne
 
-* **Backend** : Django 6.0 (Python 3.10+)
-* **Base de données** : PostgreSQL 17.6 hébergé sur **Supabase** (Session Pooler SSL)
-* **ORM & Sécurité** : Django ORM, Chiffrement AES des données sensibles, Rate Limiting sur les endpoints sensibles
-* **Frontend** : HTML5, CSS3 Moderne (Flexbox/Grid), JavaScript Vanilla (sans framework lourd)
-* **APIs & Données** : Intégration de l'API Spoonacular pour l'import de recettes
+**Tester BioDelice :**
+
+https://biodelice.onrender.com/
+
+> L'application est déployée sur Render. Avec l'offre gratuite, l'instance peut être mise en veille après une période d'inactivité. Le premier chargement après cette période peut donc être plus lent.
 
 ---
 
-## 📁 Architecture du Projet
+## Fonctionnalités principales
+
+### Gestion des utilisateurs
+
+* Création et gestion des comptes
+* Authentification et déconnexion
+* Gestion du profil utilisateur
+* Gestion des informations personnelles et alimentaires
+* Gestion des aliments à éviter
+* Gestion des contraintes alimentaires
+
+### Recommandation alimentaire
+
+* Consultation des aliments et recettes
+* Recommandations adaptées au profil utilisateur
+* Prise en compte des contraintes alimentaires
+* Gestion des favoris
+* Substitution d'aliments
+
+### Planification des repas
+
+* Création et gestion de plans alimentaires
+* Organisation des repas
+* Gestion des ingrédients disponibles
+* Prise en compte des aliments disponibles dans le réfrigérateur
+
+### Administration
+
+L'application dispose d'une interface d'administration permettant notamment de gérer les données de l'application et les différents éléments liés aux utilisateurs, aliments et recettes.
+
+L'accès aux fonctionnalités d'administration est contrôlé selon les droits de l'utilisateur.
+
+---
+
+## Sécurité
+
+La sécurité constitue une partie importante du projet. BioDelice intègre plusieurs mécanismes de protection au niveau de l'authentification, des données et des fonctionnalités sensibles.
+
+### Authentification et contrôle d'accès
+
+* Utilisation du système d'authentification natif de Django.
+* Séparation entre les fonctionnalités utilisateur et administrateur.
+* Contrôle des accès au back-office à l'aide des permissions Django (`is_staff` et `is_superuser`).
+* Stockage sécurisé des mots de passe avec le mécanisme de hashage de Django basé sur PBKDF2 et un salt aléatoire.
+
+### Protection des formulaires et des entrées
+
+* Protection CSRF sur les formulaires et requêtes POST.
+* Validation des données côté serveur.
+* Politique de complexité des mots de passe.
+* Protection contre les injections XSS grâce à l'échappement automatique des variables dans les templates Django.
+
+### Protection des comptes
+
+* Protection contre l'énumération des comptes lors de la récupération de mot de passe.
+* Codes de récupération temporaires à usage unique.
+* Limitation du nombre de tentatives sur les fonctionnalités sensibles :
+
+  * 5 tentatives de connexion sur une période de 15 minutes.
+  * 3 demandes de réinitialisation de mot de passe par heure.
+
+### Protection des sessions
+
+En production, les cookies de session utilisent les mécanismes `HttpOnly` et `Secure`, permettant de limiter leur exposition côté client et de garantir leur transmission via HTTPS.
+
+### Protection des données sensibles
+
+Les informations sensibles liées notamment aux contraintes de santé, allergies, restrictions alimentaires et aliments à éviter bénéficient de mécanismes de protection au niveau du stockage et des relations de données.
+
+### Gestion des secrets
+
+Les informations sensibles de configuration ne sont pas stockées dans le dépôt GitHub.
+
+Les variables d'environnement sont utilisées pour gérer notamment :
+
+* `SECRET_KEY`
+* Identifiants de base de données
+* Identifiants SMTP
+* Autres paramètres sensibles de production
+
+---
+
+## Architecture
+
+```text
+                    Utilisateur
+                        |
+                        v
+                Application Web
+                     Django
+                        |
+          +-------------+-------------+
+          |             |             |
+          v             v             v
+    Authentification  Recettes    Planification
+          |             |             |
+          +-------------+-------------+
+                        |
+                        v
+                   Django ORM
+                        |
+                        v
+               PostgreSQL / Supabase
+```
+
+L'application Django est hébergée sur Render tandis que la base de données PostgreSQL est hébergée sur Supabase.
+
+---
+
+## Technologies utilisées
+
+### Backend
+
+* Python
+* Django
+* Django ORM
+* Gunicorn
+
+### Base de données
+
+* PostgreSQL
+* Supabase
+
+### Frontend
+
+* HTML
+* CSS
+* JavaScript
+* Django Templates
+
+### Déploiement
+
+* Render
+* Gunicorn
+* WhiteNoise
+
+### Bibliothèques principales
+
+* psycopg2-binary
+* Pillow
+* python-dotenv
+* dj-database-url
+* cryptography
+* requests
+
+---
+
+## Structure du projet
 
 ```text
 Software_secu/
-├── accounts/               # Authentification, profils utilisateurs et produits alimentaires
-│   ├── management/         # Commandes CLI pour l'import des recettes (import_sale, import_off)
-│   ├── models.py           # User, HealthConstraint, FoodProduct, PasswordResetCode
-│   ├── admin.py            # Configuration Django Admin avancée (CustomUserAdmin)
-│   └── views.py            # Vues inscription, connexion, onboarding et mise à jour profil
-├── recipes/                # Gestion des plans de repas et frigo virtuel
-│   ├── models.py           # MealPlan, FridgeIngredient
-│   ├── services.py         # Règles de substitution et algorithme de match frigo
-│   └── views.py            # Vues catalogue, planner, favoris et API frigo
-├── backoffice/             # Tableau de bord d'administration sur-mesure
-│   ├── models.py           # SubstitutionRule
-│   ├── views.py            # Dashboard analytique mis en cache et gestion des recettes
-│   └── forms.py            # Formulaires de gestion backoffice
-├── biodelice/              # Configuration globale du projet Django (settings, urls, wsgi)
-├── templates/              # Templates HTML (home, regime, planner, settings, admin)
-├── static/                 # Fichiers statiques (images, styles CSS)
-├── .env                    # Variables d'environnement (Base de données, Clés API)
-└── manage.py               # Script d'exécution Django
+│
+├── accounts/
+├── recipes/
+├── backoffice/
+├── biodelice/
+├── templates/
+├── static/
+├── media/
+│
+├── build.sh
+├── requirements.txt
+├── .env.example
+├── .gitignore
+├── manage.py
+└── README.md
 ```
 
 ---
 
-## ⚙️ Installation et Configuration Locale
+## Base de données
 
-### 1. Prérequis
-* **Python 3.10+** installé sur votre machine
-* Un compte **Supabase** (ou une instance PostgreSQL locale)
+BioDelice utilise PostgreSQL comme système de gestion de base de données.
 
-### 2. Cloner le dépôt
-```bash
-git clone https://github.com/votre-utilisateur/biodelice.git
-cd biodelice
+La base de données est hébergée sur Supabase et l'application Django communique avec celle-ci à travers le Django ORM.
+
+Les migrations Django permettent de créer et maintenir la structure de la base de données.
+
+---
+
+## Déploiement
+
+L'application est actuellement déployée sur Render.
+
+Architecture de production :
+
+```text
+GitHub
+   |
+   v
+Render
+   |
+   v
+Django + Gunicorn
+   |
+   v
+Supabase PostgreSQL
 ```
 
-### 3. Créer et activer l'environnement virtuel
+Le processus de déploiement prend notamment en charge :
+
+* Installation des dépendances Python
+* Collecte des fichiers statiques
+* Application des migrations Django
+* Démarrage de l'application avec Gunicorn
+
+Les variables sensibles sont configurées directement dans l'environnement de production et ne sont pas publiées dans le dépôt.
+
+---
+
+## Installation locale
+
+### 1. Cloner le projet
+
 ```bash
-# Windows
+git clone https://github.com/Erennmayss/Software_secu.git
+cd Software_secu
+```
+
+### 2. Créer un environnement virtuel
+
+Sous Windows :
+
+```bash
 python -m venv venv
-.\venv\Scripts\activate
-
-# Linux/macOS
-python3 -m venv venv
-source venv/bin/activate
+venv\Scripts\activate
 ```
 
-### 4. Installer les dépendances
+### 3. Installer les dépendances
+
 ```bash
-pip install django psycopg2-binary python-dotenv cryptography requests
+pip install -r requirements.txt
 ```
 
-### 5. Configurer les variables d'environnement (`.env`)
-Créer un fichier `.env` à la racine du projet et ajouter les identifiants :
+### 4. Configurer les variables d'environnement
 
-```env
-SECRET_KEY=votre-cle-secrete-django
-DEBUG=True
-ALLOWED_HOSTS=localhost,127.0.0.1
+Créer un fichier `.env` à partir du fichier `.env.example` et renseigner les valeurs nécessaires à l'environnement local.
 
-# Configuration Supabase / PostgreSQL
-DB_NAME=postgres
-DB_USER=postgres.votre_project_ref
-DB_PASSWORD=votre_mot_de_passe_db
-DB_HOST=aws-1-eu-west-3.pooler.supabase.com
-DB_PORT=5432
+Le fichier `.env` ne doit pas être ajouté au dépôt GitHub.
 
-# Optionnel : Clé API Spoonacular pour l'import de données
-SPOONACULAR_API_KEY=votre_cle_api_spoonacular
-```
+### 5. Appliquer les migrations
 
-### 6. Appliquer les migrations
 ```bash
 python manage.py migrate
 ```
 
-### 7. Créer un compte administrateur (Superuser)
+### 6. Créer un administrateur
+
 ```bash
 python manage.py createsuperuser
 ```
 
-### 8. Lancer le serveur de développement
+### 7. Lancer l'application
+
 ```bash
 python manage.py runserver
 ```
 
-L'application sera accessible sur `http://127.0.0.1:8000/` et le Django Admin sur `http://127.0.0.1:8000/admin/`.
+L'application sera accessible à :
 
----
+```text
+http://127.0.0.1:8000/
+```
 
-## 📥 Importation des Recettes (Spoonacular)
+L'interface d'administration est accessible à :
 
-Le projet contient des commandes de gestion personnalisées pour remplir la base de données avec des recettes structurées :
-
-```bash
-# Importer des recettes salées
-python manage.py import_sale
-
-# Importer des recettes sucrées
-python manage.py import_off
+```text
+http://127.0.0.1:8000/admin/
 ```
 
 ---
 
-## 🔒 Sécurité et Bonnes Pratiques
+## Vérification
 
-* **Variables d'environnement** : Le fichier `.env` et les données sensibles sont ignorés par Git via `.gitignore`.
-* **Protections intégrées** : Utilisation du middleware CSRF de Django, protection des routes d'administration (`@staff_required`), et hachage sécurisé des mots de passe.
-* **Chiffrement** : Les données médicales sensibles et allergènes dans le profil utilisateur sont chiffrées au niveau du champ de base de données.
+Les principales vérifications Django peuvent être effectuées avec :
+
+```bash
+python manage.py check
+```
+
+et :
+
+```bash
+python manage.py migrate
+```
+
+La collecte des fichiers statiques peut être vérifiée avec :
+
+```bash
+python manage.py collectstatic --no-input
+```
 
 ---
 
-## 📄 Licence
+## Documentation
 
-Ce projet est sous licence MIT. Libre à vous de le contribuer et de l'améliorer !
+Un rapport détaillé du projet est disponible dans le dépôt.
+
+Le rapport présente notamment :
+
+* L'analyse et les objectifs du projet
+* Les fonctionnalités
+* L'architecture
+* La conception de la base de données
+* L'implémentation
+* Les mécanismes de sécurité
+* Les tests
+* Le déploiement
+* Les perspectives d'amélioration
+
+---
+
+## Liens
+
+**Application :**
+https://biodelice.onrender.com/
+
+**Dépôt GitHub :**
+https://github.com/Erennmayss/Software_secu
+
+---
+
+## Projet académique
+
+**BioDelice — Personalized Food Recommendation Platform**
+
+Projet réalisé autour du développement sécurisé d'une application web de recommandation alimentaire personnalisée.
